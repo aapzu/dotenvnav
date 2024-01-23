@@ -1,12 +1,10 @@
 {
-  "name": "dotenvnav",
-  "version": "1.0.0",
+  "name": "@aapzu/dotenvnav",
+  "version": "0.0.1",
   "description": "",
   "type": "module",
   "main": "src/index.ts",
-  "bin": {
-    "dotenvnav": "src/index.ts"
-  },
+  "bin": "src/index.ts",
   "scripts": {
     "start": "tsx src/index.ts"
   },
