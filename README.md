@@ -5,13 +5,25 @@ A utility tool to store your project's local `.env` files in a single place, sym
 ## Getting started
 
 ```sh
-npx dotenvnav init
+npx @aapzu/dotenvnav init
 ```
 
 ## Creating a new environment
+Symlinks all found `.env*` files into the config directory
 
 ```sh
-npx dotenvnav clone-env default new-env
+npx @aapzu/dotenvnav clone-env default new-env
+```
+
+## Using an environment
+```sh
+npx @aapzu/dotenvnav env new-env
+```
+
+## Restoring old files
+Removes all symlinks and restores the values of the config files
+```sh
+npx @aapzu/dotenvnav restore
 ```
 
 ## Print all commands and options
