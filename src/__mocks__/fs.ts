@@ -1,1 +1,1 @@
-export * from 'memfs';
+export { fs as default } from 'memfs'
