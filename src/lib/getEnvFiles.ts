@@ -1,11 +1,11 @@
 import fastGlob from 'fast-glob';
 
-import { TRootOptions } from '../types';
-
 import { resolvePath } from './fsUtils';
 import { logger } from './logger';
 
-export type TGetEnvFilesOpts = TRootOptions & {
+export type TGetEnvFilesOpts = {
+  projectRoot: string;
+  configRoot: string;
   envFileName: string | string[];
   envName: string;
 };
@@ -25,13 +25,13 @@ export const getEnvFiles = async ({
 
   const filesFromProject = (
     await fastGlob(
-      envFileNames.map((name) => `packages/**/${name}`),
+      envFileNames.map((name) => `**/${name}`),
       {
         cwd: resolvePath(projectRoot),
         ignore: ['**/node_modules/**'],
       },
     )
-  ).map((filePath) => filePath.replace('packages/', '').replace(/\//g, '__'));
+  ).map((filePath) => filePath.replace(/\//g, '__'));
 
   const filesFromConfig = await fastGlob(
     envFileNames.map((name) => `*${name}`),
@@ -49,7 +49,6 @@ export const getEnvFiles = async ({
   return allFiles.map((dotenvnavFileName) => ({
     projectPath: resolvePath(
       projectRoot,
-      'packages',
       dotenvnavFileName.replace(/__/g, '/'),
     ),
     dotenvnavFileName,

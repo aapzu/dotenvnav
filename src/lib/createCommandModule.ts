@@ -1,7 +1,7 @@
 import { CommandModule } from 'yargs';
 
-import type { TRootOptions } from '..';
+import type { TCommonOptions } from '../parser';
 
 export const createCommandModule = <U>(
-  module: CommandModule<TRootOptions, U>,
+  module: CommandModule<TCommonOptions, U>,
 ) => module;
