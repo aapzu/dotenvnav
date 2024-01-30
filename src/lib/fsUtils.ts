@@ -1,10 +1,12 @@
 import path from 'node:path';
 import os from 'node:os';
-import fs from 'node:fs/promises';
+import fsOriginal from 'node:fs';
 
 import { v4 as uuid } from 'uuid';
 
 import { logger } from './logger';
+
+const fs = fsOriginal.promises;
 
 type TCommonOpts = {
   overrideExisting?: boolean;
