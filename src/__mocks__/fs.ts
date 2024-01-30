@@ -1,1 +1,1 @@
-export * from 'memfs'
+export * from 'memfs';

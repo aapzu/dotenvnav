@@ -2,10 +2,10 @@ import {
   createSymlink,
   resolvePath,
   runActionWithBackup,
-} from "../lib/fsUtils";
-import { getEnvFiles } from "../lib/getEnvFiles";
-import { logger } from "../lib/logger";
-import { TRootOptions } from "../types";
+} from '../lib/fsUtils';
+import { getEnvFiles } from '../lib/getEnvFiles';
+import { logger } from '../lib/logger';
+import { TRootOptions } from '../types';
 
 type TUseEnvOpts = TRootOptions & {
   envName: string;

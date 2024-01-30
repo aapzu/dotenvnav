@@ -1,5 +1,5 @@
-import chalk from "chalk";
-import log from "loglevel";
+import chalk from 'chalk';
+import log from 'loglevel';
 
 export const logger = {
   info: (...msg: unknown[]) => log.info(chalk.whiteBright(...msg)),

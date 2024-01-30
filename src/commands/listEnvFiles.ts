@@ -1,5 +1,5 @@
-import { TGetEnvFilesOpts, getEnvFiles } from "../lib/getEnvFiles";
-import { logger } from "../lib/logger";
+import { TGetEnvFilesOpts, getEnvFiles } from '../lib/getEnvFiles';
+import { logger } from '../lib/logger';
 
 type TListEnvFilesOpts = TGetEnvFilesOpts;
 
@@ -14,6 +14,6 @@ export const listEnvFiles = async (options: TListEnvFilesOpts) => {
         ({ dotenvnavFileName, projectPath }) =>
           `${projectPath}\t${dotenvnavFileName}`,
       )
-      .join("\n"),
+      .join('\n'),
   );
 };

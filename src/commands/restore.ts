@@ -1,9 +1,7 @@
-import path from "node:path";
-
-import { copy, resolvePath, runActionWithBackup } from "../lib/fsUtils";
-import { logger } from "../lib/logger";
-import { TRootOptions } from "../types";
-import { getEnvFiles } from "../lib/getEnvFiles";
+import { copy, resolvePath, runActionWithBackup } from '../lib/fsUtils';
+import { logger } from '../lib/logger';
+import { TRootOptions } from '../types';
+import { getEnvFiles } from '../lib/getEnvFiles';
 
 type TRestoreOpts = TRootOptions & {
   envName: string;
