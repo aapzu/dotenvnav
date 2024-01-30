@@ -4,11 +4,11 @@ import {
   getFiles,
   resolvePath,
   runActionWithBackup,
-} from "../lib/fsUtils";
-import { logger } from "../lib/logger";
-import { TRootOptions } from "../types";
+} from '../lib/fsUtils';
+import { logger } from '../lib/logger';
+import { TRootOptions } from '../types';
 
-type TCloneEnvOpts = Omit<TRootOptions, "projectRoot"> & {
+type TCloneEnvOpts = Omit<TRootOptions, 'projectRoot'> & {
   fromEnvName: string;
   toEnvName: string;
   overrideExisting: boolean;
@@ -42,5 +42,5 @@ export const cloneEnv = async ({
     }
   }, files);
 
-  logger.info("Environment cloned");
+  logger.info('Environment cloned');
 };

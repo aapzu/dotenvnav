@@ -1,21 +1,23 @@
-import path from "node:path";
-import os from "node:os";
-import fs from "node:fs/promises";
-import { v4 as uuid } from "uuid";
-import { logger } from "./logger";
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs/promises';
+
+import { v4 as uuid } from 'uuid';
+
+import { logger } from './logger';
 
 type TCommonOpts = {
   overrideExisting?: boolean;
 };
 
 export const resolvePath = (...parts: string[]) =>
-  path.resolve(...parts.map((p) => p.replace("~", os.homedir())));
+  path.resolve(...parts.map((p) => p.replace('~', os.homedir())));
 
 const isEnoentError = (err: unknown) =>
-  err && typeof err === "object" && "code" in err && err.code === "ENOENT";
+  err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT';
 
 const isInvalidArgumentError = (err: unknown) =>
-  err && typeof err === "object" && "code" in err && err.code === "EINVAL";
+  err && typeof err === 'object' && 'code' in err && err.code === 'EINVAL';
 
 export const symlinkExists = async (relativeSymlinkPath: string) => {
   try {
@@ -63,7 +65,7 @@ export const runActionWithBackup = async (
 
   const backupPaths = filePathsToBackup.map((p) => `${p}.backup_${uuid()}`);
 
-  logger.debug("Backing up files");
+  logger.debug('Backing up files');
 
   await Promise.all(
     filePathsToBackup.map(async (p, i) => {
@@ -76,7 +78,7 @@ export const runActionWithBackup = async (
   );
 
   try {
-    logger.debug("Running action");
+    logger.debug('Running action');
     await action();
 
     await Promise.all(
@@ -88,7 +90,7 @@ export const runActionWithBackup = async (
       }),
     );
   } catch (err: unknown) {
-    logger.debug("Action failed, restoring backups");
+    logger.debug('Action failed, restoring backups');
     await Promise.all(
       filePathsToBackup.map(async (p, i) => {
         const backupPath = backupPaths[i];
@@ -189,7 +191,7 @@ export const createSymlink = async (
 
 export const getFiles = async (dir: string) => {
   const files = await fs.readdir(dir);
-  return files.filter((f) => !f.startsWith("."));
+  return files.filter((f) => !f.startsWith('.'));
 };
 
 export const remove = async (relativePath: string) => {
