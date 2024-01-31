@@ -8,5 +8,7 @@
   },
   "files.exclude": {
     "node_modules": true
-  }
+  },
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true
 }
