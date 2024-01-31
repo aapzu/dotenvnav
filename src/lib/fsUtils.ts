@@ -197,19 +197,15 @@ export const getFiles = async (dir: string) => {
 };
 
 export const remove = async (relativePath: string) => {
-  try {
-    const absolutePath = resolvePath(relativePath);
-    const stat = await fs.lstat(absolutePath);
-    if (stat.isDirectory()) {
-      await fs.rmdir(absolutePath, { recursive: true });
-    } else {
-      await fs.unlink(absolutePath);
-    }
-  } catch (err: unknown) {
-    if (isEnoentError(err)) {
-      logger.error(`File not found: ${relativePath}`);
-      return;
-    }
-    throw err;
+  if (!(await exists(relativePath))) {
+    logger.error(`File not found: ${relativePath}`);
+    return;
+  }
+  const absolutePath = resolvePath(relativePath);
+  const stat = await fs.lstat(absolutePath);
+  if (stat.isDirectory()) {
+    await fs.rmdir(absolutePath, { recursive: true });
+  } else {
+    await fs.unlink(absolutePath);
   }
 };
