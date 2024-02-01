@@ -1,29 +1,57 @@
-import path from 'node:path';
-import os from 'node:os';
-import fsOriginal from 'node:fs';
+import * as fsOriginal from 'node:fs';
 
 import { v4 as uuid } from 'uuid';
 
 import { logger } from './logger';
 
-const fs = fsOriginal.promises;
+const fsPromises = fsOriginal.promises;
+
+const DRY_RUN_KEYS = [
+  'unlink',
+  'rmdir',
+  'symlink',
+  'cp',
+  'rename',
+] satisfies (keyof typeof fsPromises)[];
+
+type TFsPromisesFunctionKey = keyof {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  [K in keyof typeof fsPromises as (typeof fsPromises)[K] extends Function
+    ? K
+    : never]: true;
+};
+
+export const fs: typeof fsPromises = {
+  ...fsPromises,
+  ...DRY_RUN_KEYS.reduce<typeof fsPromises>(
+    <K extends TFsPromisesFunctionKey>(acc: typeof fsPromises, key: K) => ({
+      ...acc,
+      [key]: (...args: Parameters<(typeof fsPromises)[K]>) => {
+        if (process.env.DRY_RUN) {
+          logger.info(`Dry run: ${key}(${args.join(', ')})`);
+          return Promise.resolve();
+        }
+        // @ts-expect-error can't figure out how to type this
+        return fsPromises[key](...args);
+      },
+    }),
+    fsPromises,
+  ),
+};
 
 type TCommonOpts = {
   overrideExisting?: boolean;
 };
 
-export const resolvePath = (...parts: string[]) =>
-  path.resolve(...parts.map((p) => p.replace('~', os.homedir())));
+const isEnoentError = (err: unknown): err is Error =>
+  !!err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT';
 
-const isEnoentError = (err: unknown) =>
-  err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT';
+const isInvalidArgumentError = (err: unknown): err is Error =>
+  !!err && typeof err === 'object' && 'code' in err && err.code === 'EINVAL';
 
-const isInvalidArgumentError = (err: unknown) =>
-  err && typeof err === 'object' && 'code' in err && err.code === 'EINVAL';
-
-export const symlinkExists = async (relativeSymlinkPath: string) => {
+export const symlinkExists = async (symlinkPath: string) => {
   try {
-    await fs.readlink(resolvePath(relativeSymlinkPath));
+    await fs.readlink(symlinkPath);
     return true;
   } catch (err: unknown) {
     if (isEnoentError(err) || isInvalidArgumentError(err)) {
@@ -33,9 +61,9 @@ export const symlinkExists = async (relativeSymlinkPath: string) => {
   }
 };
 
-export const fileExists = async (relativePath: string) => {
+export const fileExists = async (filePath: string) => {
   try {
-    await fs.stat(resolvePath(relativePath));
+    await fs.stat(filePath);
     return true;
   } catch (err: unknown) {
     if (isEnoentError(err)) {
@@ -107,12 +135,11 @@ export const runActionWithBackup = async (
   }
 };
 
-export const createIfNotExists = async (relativePath: string) => {
-  const absolutePath = resolvePath(relativePath);
-  const alreadyExists = await exists(absolutePath);
+export const createDirectoryIfNotExists = async (directoryPath: string) => {
+  const alreadyExists = await exists(directoryPath);
   if (!alreadyExists) {
-    logger.debug(`Creating directory ${absolutePath}`);
-    await fs.mkdir(absolutePath);
+    logger.debug(`Creating directory ${directoryPath}`);
+    await fs.mkdir(directoryPath);
   }
 };
 
@@ -155,40 +182,26 @@ export const createSymlink = async (
   symlinkPath: string,
   { overrideExisting }: TCommonOpts = {},
 ) => {
-  try {
-    const alreadyExists = await exists(symlinkPath);
-    if (alreadyExists) {
-      if (overrideExisting) {
-        logger.debug(`Overriding existing symlink at ${symlinkPath}`);
-      } else {
-        logger.debug(`Symlink already exists at ${symlinkPath}, skipping`);
-        return;
-      }
-    }
-    const absoluteOriginalFilePath = resolvePath(originalFilePath);
-    const absoluteSymlinkPath = resolvePath(symlinkPath);
+  const symlinkExists = await exists(symlinkPath);
+  const originalFileExists = await exists(originalFilePath);
 
-    if (!(await exists(absoluteOriginalFilePath))) {
-      logger.error(`File not found: ${absoluteOriginalFilePath}`);
-      return;
-    }
-
-    if (alreadyExists) {
-      logger.debug(`Removing existing symlink at ${absoluteSymlinkPath}`);
-      await remove(absoluteSymlinkPath);
-    }
-
-    logger.debug(
-      `Creating symlink from ${absoluteSymlinkPath} to ${absoluteOriginalFilePath}`,
-    );
-    await fs.symlink(absoluteOriginalFilePath, absoluteSymlinkPath);
-  } catch (err: unknown) {
-    if (isEnoentError(err)) {
-      logger.error(`File not found: ${originalFilePath}`);
-      return;
-    }
-    throw err;
+  if (!originalFileExists) {
+    logger.error(`File not found: ${originalFilePath}`);
+    return;
   }
+
+  if (symlinkExists) {
+    if (overrideExisting) {
+      logger.debug(`Overriding existing symlink at ${symlinkPath}`);
+      await remove(symlinkPath);
+    } else {
+      logger.debug(`Symlink already exists at ${symlinkPath}, skipping`);
+      return;
+    }
+  }
+
+  logger.debug(`Creating symlink from ${originalFilePath} to ${symlinkPath}`);
+  await fs.symlink(originalFilePath, symlinkPath);
 };
 
 export const getFiles = async (dir: string) => {
@@ -196,16 +209,15 @@ export const getFiles = async (dir: string) => {
   return files.filter((f) => !f.startsWith('.'));
 };
 
-export const remove = async (relativePath: string) => {
-  if (!(await exists(relativePath))) {
-    logger.error(`File not found: ${relativePath}`);
+export const remove = async (path: string) => {
+  if (!(await exists(path))) {
+    logger.error(`File not found: ${path}`);
     return;
   }
-  const absolutePath = resolvePath(relativePath);
-  const stat = await fs.lstat(absolutePath);
+  const stat = await fs.lstat(path);
   if (stat.isDirectory()) {
-    await fs.rmdir(absolutePath, { recursive: true });
+    await fs.rmdir(path, { recursive: true });
   } else {
-    await fs.unlink(absolutePath);
+    await fs.unlink(path);
   }
 };
