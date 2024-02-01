@@ -1,9 +1,7 @@
+import { resolve } from 'node:path';
+
 import { createCommandModule } from '../lib/createCommandModule';
-import {
-  createSymlink,
-  resolvePath,
-  runActionWithBackup,
-} from '../lib/fsUtils';
+import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
@@ -31,7 +29,7 @@ const useEnvCommand = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
-          const configFileAbsolutePath = resolvePath(
+          const configFileAbsolutePath = resolve(
             configRoot,
             envName,
             dotenvnavFileName,
