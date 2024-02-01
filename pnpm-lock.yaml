@@ -20,9 +20,6 @@ dependencies:
   tsx:
     specifier: ^4.6.2
     version: 4.6.2
-  uuid:
-    specifier: ^9.0.1
-    version: 9.0.1
   yargs:
     specifier: ^17.7.2
     version: 17.7.2
@@ -37,9 +34,6 @@ devDependencies:
   '@types/ramda':
     specifier: ^0.29.10
     version: 0.29.10
-  '@types/uuid':
-    specifier: ^9.0.7
-    version: 9.0.7
   '@types/yargs':
     specifier: ^17.0.32
     version: 17.0.32
@@ -723,10 +717,6 @@ packages:
 
   /@types/semver@7.5.6:
     resolution: {integrity: sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==}
-    dev: true
-
-  /@types/uuid@9.0.7:
-    resolution: {integrity: sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==}
     dev: true
 
   /@types/yargs-parser@21.0.3:
@@ -2865,11 +2855,6 @@ packages:
     dependencies:
       punycode: 2.3.1
     dev: true
-
-  /uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
-    hasBin: true
-    dev: false
 
   /vite-node@1.2.2(@types/node@20.10.5):
     resolution: {integrity: sha512-1as4rDTgVWJO3n1uHmUYqq7nsFgINQ9u+mRcXpjeOMJUmviqNKjcZB7UfRZrlM7MjYXMKpuWp5oGkjaFLnjawg==}
