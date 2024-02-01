@@ -38,55 +38,55 @@ describe('init command', () => {
     expect(fs.existsSync('/temp/.dotenvnav')).toBe(true);
   });
 
-  // it('creates configRoot/envName if it does not exist', async () => {
-  //   setup({
-  //     '.dotenvnav': {},
-  //     testProject: {
-  //       '.env': 'foo=bar',
-  //       inner: {
-  //         '.env': 'foobar=barfoo',
-  //       },
-  //     },
-  //   });
-  //   await runCommand('init', defaultOptions);
-  //   expect(fs.existsSync('/temp/.dotenvnav/testEnv')).toBe(true);
-  // });
+  it('creates configRoot/envName if it does not exist', async () => {
+    setup({
+      '.dotenvnav': {},
+      testProject: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
+        },
+      },
+    });
+    await runCommand('init', defaultOptions);
+    expect(fs.existsSync('/temp/.dotenvnav/testEnv')).toBe(true);
+  });
 
-  // it('moves .env files to configRoot/envName', async () => {
-  //   setup({
-  //     '.dotenvnav': {},
-  //     testProject: {
-  //       '.env': 'foo=bar',
-  //       inner: {
-  //         '.env': 'foobar=barfoo',
-  //       },
-  //     },
-  //   });
-  //   await runCommand('init', defaultOptions);
+  it('moves .env files to configRoot/envName', async () => {
+    setup({
+      '.dotenvnav': {},
+      testProject: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
+        },
+      },
+    });
+    await runCommand('init', defaultOptions);
 
-  //   expect(fs.existsSync('/temp/.dotenvnav/testEnv/root.env')).toBe(true);
-  //   expect(fs.existsSync('/temp/.dotenvnav/testEnv/inner__.env')).toBe(true);
-  // });
+    expect(fs.existsSync('/temp/.dotenvnav/testEnv/root.env')).toBe(true);
+    expect(fs.existsSync('/temp/.dotenvnav/testEnv/inner__.env')).toBe(true);
+  });
 
-  // it('creates symlinks to .env files in the project root', async () => {
-  //   setup({
-  //     '.dotenvnav': {},
-  //     testProject: {
-  //       '.env': 'foo=bar',
-  //       inner: {
-  //         '.env': 'foobar=barfoo',
-  //       },
-  //     },
-  //   });
-  //   await runCommand('init', defaultOptions);
+  it('creates symlinks to .env files in the project root', async () => {
+    setup({
+      '.dotenvnav': {},
+      testProject: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
+        },
+      },
+    });
+    await runCommand('init', defaultOptions);
 
-  //   expect(fs.existsSync('/temp/testProject/.env')).toBe(true);
-  //   expect(fs.readlinkSync('/temp/testProject/.env')).toBe(
-  //     '/temp/.dotenvnav/testEnv/root.env',
-  //   );
-  //   expect(fs.existsSync('/temp/testProject/inner/.env')).toBe(true);
-  //   expect(fs.readlinkSync('/temp/testProject/inner/.env')).toBe(
-  //     '/temp/.dotenvnav/testEnv/inner__.env',
-  //   );
-  // });
+    expect(fs.existsSync('/temp/testProject/.env')).toBe(true);
+    expect(fs.readlinkSync('/temp/testProject/.env')).toBe(
+      '/temp/.dotenvnav/testEnv/root.env',
+    );
+    expect(fs.existsSync('/temp/testProject/inner/.env')).toBe(true);
+    expect(fs.readlinkSync('/temp/testProject/inner/.env')).toBe(
+      '/temp/.dotenvnav/testEnv/inner__.env',
+    );
+  });
 });

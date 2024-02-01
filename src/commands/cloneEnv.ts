@@ -39,9 +39,9 @@ const cloneEnvCommand = createCommandModule({
 
     logger.info(`Cloning environment ${fromEnvName} to ${toEnvName}`);
 
-    await createDirectoryIfNotExists(absoluteTo);
+    await createDirectoryIfNotExists(toPath);
 
-    const files = await getFiles(absoluteFrom);
+    const files = await getFiles(fromPath);
 
     await runActionWithBackup(async () => {
       for (const file of files) {
