@@ -1,9 +1,8 @@
-import path from 'node:path';
+import path, { resolve } from 'node:path';
 
 import {
-  createIfNotExists,
+  createDirectoryIfNotExists,
   move,
-  resolvePath,
   runActionWithBackup,
   symlinkExists,
 } from '../lib/fsUtils';
@@ -14,7 +13,9 @@ import { getEnvFiles } from '../lib/getEnvFiles';
 import useEnvModule from './useEnv';
 
 const initCommand = createCommandModule({
+  command: 'init [env-name]',
   aliases: ['i'],
+  describe: 'Initialize env variable links into a new directory',
   builder: (yargs) =>
     yargs
       .option('override-existing', {
@@ -29,15 +30,11 @@ const initCommand = createCommandModule({
         description: 'Name of the environment',
         default: 'default',
       }),
-  command: 'init [env-name]',
-  deprecated: false,
-  describe: 'Initialize env variable links into a new directory',
   handler: async (opts) => {
     const { configRoot, overrideExisting, envName } = opts;
-
     logger.info('Initializing a new config dir');
-    await createIfNotExists(configRoot);
-    await createIfNotExists(path.join(configRoot, envName));
+    await createDirectoryIfNotExists(configRoot);
+    await createDirectoryIfNotExists(path.join(configRoot, envName));
 
     const envFiles = await getEnvFiles(opts);
 
@@ -46,7 +43,7 @@ const initCommand = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { projectPath, dotenvnavFileName } of envFiles) {
-          const configFileAbsolutePath = resolvePath(
+          const configFilePath = resolve(
             configRoot,
             envName,
             dotenvnavFileName,
@@ -57,7 +54,7 @@ const initCommand = createCommandModule({
             continue;
           }
 
-          await move(projectPath, configFileAbsolutePath, {
+          await move(projectPath, configFilePath, {
             overrideExisting,
           });
         }

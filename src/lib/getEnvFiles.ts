@@ -1,8 +1,7 @@
-import fs from 'fs';
+import { resolve } from 'node:path';
 
 import fastGlob from 'fast-glob';
 
-import { resolvePath } from './fsUtils';
 import { logger } from './logger';
 
 export type TGetEnvFilesOpts = {
@@ -63,11 +62,11 @@ export const getEnvFiles = async ({
 
   const filesFromConfig = await fastGlob(
     envFileNames.map((name) => `*${name}`),
-    { cwd: resolvePath(configRoot, envName) },
+    { cwd: resolve(configRoot, envName) },
   );
 
   const allFiles = [
-    ...new Set([...mappedFilesFromProject, ...filesFromConfig]),
+    ...new Set<string>([...mappedFilesFromProject, ...filesFromConfig]),
   ].sort();
 
   if (allFiles.length === 0) {
@@ -75,7 +74,7 @@ export const getEnvFiles = async ({
   }
 
   return allFiles.map((dotenvnavFileName) => ({
-    projectPath: resolvePath(
+    projectPath: resolve(
       projectRoot,
       configFileNameToProjectFilePath(dotenvnavFileName, envFileName),
     ),

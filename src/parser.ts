@@ -3,7 +3,6 @@
 import yargs from 'yargs';
 import log from 'loglevel';
 
-import { resolvePath } from './lib/fsUtils';
 import initCommand from './commands/init';
 import restoreCommand from './commands/restore';
 import useEnvCommand from './commands/useEnv';
@@ -27,14 +26,13 @@ const commonYargs = yargs(process.argv.slice(2))
     description: 'Path to the config root directory',
     default: '~/.dotenvnav',
     normalize: true,
-    coerce: (path) => resolvePath(path),
   })
   .option('env-file-name', {
     alias: 'f',
     type: 'string',
     array: true,
     description: 'Name of the env file',
-    default: '.env.local',
+    default: ['.env', '.env.local'],
   })
   .option('verbose', {
     alias: 'v',
@@ -45,6 +43,9 @@ const commonYargs = yargs(process.argv.slice(2))
   .middleware((argv) => {
     if (argv['verbose']) {
       log.setLevel('DEBUG');
+    }
+    if (argv['dry-run']) {
+      process.env.DRY_RUN = 'true';
     }
   });
 

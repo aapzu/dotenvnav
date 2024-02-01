@@ -1,4 +1,6 @@
-import { copy, resolvePath, runActionWithBackup } from '../lib/fsUtils';
+import { resolve } from 'node:path';
+
+import { copy, runActionWithBackup } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { createCommandModule } from '../lib/createCommandModule';
@@ -23,7 +25,7 @@ const restoreCommand = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
-          const configFileAbsolutePath = resolvePath(
+          const configFileAbsolutePath = resolve(
             configRoot,
             envName,
             dotenvnavFileName,

@@ -1,9 +1,10 @@
+import { resolve } from 'node:path';
+
 import { createCommandModule } from '../lib/createCommandModule';
 import {
   copy,
-  createIfNotExists,
+  createDirectoryIfNotExists,
   getFiles,
-  resolvePath,
   runActionWithBackup,
 } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
@@ -33,23 +34,23 @@ const cloneEnvCommand = createCommandModule({
       })
       .check((argv) => checkEnv(argv['from-env-name'], argv['config-root'])),
   handler: async ({ configRoot, fromEnvName, toEnvName, overrideExisting }) => {
-    const absoluteFrom = resolvePath(configRoot, fromEnvName);
-    const absoluteTo = resolvePath(configRoot, toEnvName);
+    const fromPath = resolve(configRoot, fromEnvName);
+    const toPath = resolve(configRoot, toEnvName);
 
     logger.info(`Cloning environment ${fromEnvName} to ${toEnvName}`);
 
-    await createIfNotExists(absoluteTo);
+    await createDirectoryIfNotExists(absoluteTo);
 
     const files = await getFiles(absoluteFrom);
 
     await runActionWithBackup(async () => {
       for (const file of files) {
-        const configFileAbsolutePath = resolvePath(absoluteFrom, file);
-        const newConfigFileAbsolutePath = resolvePath(absoluteTo, file);
+        const configFilePath = resolve(fromPath, file);
+        const newConfigFilePath = resolve(toPath, file);
 
         const commonOpts = { overrideExisting, backup: false };
 
-        await copy(configFileAbsolutePath, newConfigFileAbsolutePath, {
+        await copy(configFilePath, newConfigFilePath, {
           ...commonOpts,
         });
       }
