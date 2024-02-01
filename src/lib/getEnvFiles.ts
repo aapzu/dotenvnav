@@ -51,7 +51,7 @@ export const getEnvFiles = async ({
   const filesFromProject = await fastGlob(
     envFileNames.map((name) => `**/${name}`),
     {
-      cwd: resolvePath(projectRoot),
+      cwd: resolve(projectRoot),
       ignore: ['**/node_modules/**'],
     },
   );
