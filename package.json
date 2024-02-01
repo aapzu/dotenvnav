@@ -23,14 +23,12 @@
     "loglevel": "^1.8.1",
     "ramda": "^0.29.1",
     "tsx": "^4.6.2",
-    "uuid": "^9.0.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^20.10.5",
     "@types/ramda": "^0.29.10",
-    "@types/uuid": "^9.0.7",
     "@types/yargs": "^17.0.32",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",

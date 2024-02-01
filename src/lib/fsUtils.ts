@@ -1,7 +1,5 @@
 import * as fsOriginal from 'node:fs';
 
-import { v4 as uuid } from 'uuid';
-
 import { logger } from './logger';
 
 const fsPromises = fsOriginal.promises;
@@ -93,7 +91,7 @@ export const runActionWithBackup = async (
     ? filePathOrPathsToBackup
     : [filePathOrPathsToBackup];
 
-  const backupPaths = filePathsToBackup.map((p) => `${p}.backup_${uuid()}`);
+  const backupPaths = filePathsToBackup.map((p) => `${p}.bak`);
 
   logger.debug('Backing up files');
 

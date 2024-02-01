@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import mock from 'mock-fs';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import {
   copy,
@@ -11,6 +11,9 @@ import {
   move,
   symlinkExists,
   remove,
+  createSymlink,
+  createDirectoryIfNotExists,
+  runActionWithBackup,
 } from '../fsUtils';
 
 describe('fsUtils', () => {
@@ -75,9 +78,76 @@ describe('fsUtils', () => {
     });
   });
 
-  describe('runActionWithBackup', () => {});
+  describe('runActionWithBackup', () => {
+    it('should not backup files if skip: true', async () => {
+      const action = vi.fn().mockImplementation(async () => {
+        expect(await exists('foo/test.bak')).toBeFalsy();
+      });
+      await runActionWithBackup(action, 'foo/test', { skip: true });
+      expect(action).toHaveBeenCalled();
+    });
 
-  describe('createIfNotExists', () => {});
+    it('should backup files and run action', async () => {
+      const action = vi.fn().mockImplementation(async () => {
+        expect(await exists('foo/test.bak')).toBeTruthy();
+        expect(await exists('foo/test2.bak')).toBeTruthy();
+      });
+      await runActionWithBackup(action, ['foo/test', 'foo/test2']);
+      expect(action).toHaveBeenCalled();
+    });
+
+    it('should delete backups after successful run', async () => {
+      const action = vi.fn().mockResolvedValue(undefined);
+      await runActionWithBackup(action, ['foo/test', 'foo/test2']);
+      expect(action).toHaveBeenCalled();
+      expect(await exists('foo/test.bak')).toBeFalsy();
+      expect(await exists('foo/test2.bak')).toBeFalsy();
+    });
+
+    it('should restore backups after failed run', async () => {
+      const originalValue1 = fs.readFileSync('foo/test', 'utf8');
+      const originalValue2 = fs.readFileSync('foo/test2', 'utf8');
+      const action = vi.fn().mockImplementation(async () => {
+        fs.writeFileSync('foo/test', 'test');
+        fs.writeFileSync('foo/test2', 'test2');
+        throw new Error('test');
+      });
+      await expect(
+        runActionWithBackup(action, ['foo/test', 'foo/test2']),
+      ).rejects.toThrow();
+      expect(action).toHaveBeenCalled();
+      expect(fs.readFileSync('foo/test', 'utf8')).toBe(originalValue1);
+      expect(fs.readFileSync('foo/test2', 'utf8')).toBe(originalValue2);
+    });
+
+    it('should delete backups after failed run', async () => {
+      const action = vi.fn().mockImplementation(async () => {
+        fs.writeFileSync('foo/test', 'test');
+        fs.writeFileSync('foo/test2', 'test2');
+        throw new Error('test');
+      });
+      await expect(
+        runActionWithBackup(action, ['foo/test', 'foo/test2']),
+      ).rejects.toThrow();
+      expect(action).toHaveBeenCalled();
+      expect(await exists('foo/test.bak')).toBeFalsy();
+      expect(await exists('foo/test2.bak')).toBeFalsy();
+    });
+  });
+
+  describe('createDirectoryIfNotExists', () => {
+    it('should create directory if it does not exist', async () => {
+      expect(await exists('foo/bar')).toBeFalsy();
+      await createDirectoryIfNotExists('foo/bar');
+      expect(await exists('foo/bar')).toBeTruthy();
+    });
+
+    it('should not create directory if it exists', async () => {
+      expect(await exists('foo')).toBeTruthy();
+      await createDirectoryIfNotExists('foo');
+      expect(await exists('foo')).toBeTruthy();
+    });
+  });
 
   describe('move', () => {
     it('should move file', async () => {
@@ -116,7 +186,30 @@ describe('fsUtils', () => {
     });
   });
 
-  describe('createSymlink', () => {});
+  describe('createSymlink', () => {
+    it('should create symlink', async () => {
+      await createSymlink('foo/test', 'bar/test');
+      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
+        'foo-test',
+      );
+    });
+
+    it('should override existing symlink if overrideExisting: true', async () => {
+      fs.symlinkSync('foo/test', 'bar/test');
+      await createSymlink('foo/test2', 'bar/test', { overrideExisting: true });
+      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
+        'foo-test2',
+      );
+    });
+
+    it('should not override existing symlink if overrideExisting: false', async () => {
+      fs.symlinkSync('foo/test', 'bar/test');
+      await createSymlink('foo/test2', 'bar/test', { overrideExisting: false });
+      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
+        'foo-test',
+      );
+    });
+  });
 
   describe('getFiles', async () => {
     it('should return files in directory', async () => {
