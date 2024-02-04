@@ -3,12 +3,12 @@
 import yargs from 'yargs';
 import log from 'loglevel';
 
-import initCommand from './commands/init';
-import restoreCommand from './commands/restore';
-import useEnvCommand from './commands/useEnv';
-import cloneEnvCommand from './commands/cloneEnv';
-import listEnvsCommand from './commands/listEnvs';
-import listEnvFilesCommand from './commands/listEnvFiles';
+import initCommandModule from './commands/init';
+import restoreCommandModule from './commands/restore';
+import useEnvCommandModule from './commands/useEnv';
+import cloneEnvCommandModule from './commands/cloneEnv';
+import listEnvsCommandModule from './commands/listEnvs';
+import listEnvFilesCommandModule from './commands/listEnvFiles';
 
 log.setLevel('INFO');
 
@@ -50,12 +50,12 @@ const commonYargs = yargs(process.argv.slice(2))
   });
 
 export const parser = commonYargs
-  .command(initCommand)
-  .command(restoreCommand)
-  .command(cloneEnvCommand)
-  .command(listEnvsCommand)
-  .command(listEnvFilesCommand)
-  .command(useEnvCommand)
+  .command(initCommandModule)
+  .command(restoreCommandModule)
+  .command(cloneEnvCommandModule)
+  .command(listEnvsCommandModule)
+  .command(listEnvFilesCommandModule)
+  .command(useEnvCommandModule)
   .strict()
   .demandCommand()
   .version(false)

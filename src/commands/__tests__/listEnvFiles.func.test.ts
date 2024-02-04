@@ -4,6 +4,7 @@ import mock from 'mock-fs';
 
 import { runCommand } from '../../tests/testUtils';
 import { createMockLogger } from '../../tests/mockLogger';
+import listEnvFilesCommandModule from '../listEnvFiles';
 
 describe('listEnvFiles command', () => {
   afterEach(() => {

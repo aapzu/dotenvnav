@@ -172,7 +172,7 @@ export const copy = async (
     }
   }
   logger.debug(`Copying from ${from} to ${to}`);
-  await fs.cp(from, to, { recursive: true });
+  await fs.cp(from, to, { recursive: true, force: !!overrideExisting });
 };
 
 export const createSymlink = async (

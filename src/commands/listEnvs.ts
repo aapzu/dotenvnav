@@ -2,7 +2,7 @@ import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvs } from '../lib/getEnvs';
 import { logger } from '../lib/logger';
 
-const listEnvsCommand = createCommandModule({
+const listEnvsCommandModule = createCommandModule({
   command: 'list-envs',
   aliases: ['envs'],
   describe: 'List all environments',
@@ -13,4 +13,4 @@ const listEnvsCommand = createCommandModule({
   },
 });
 
-export default listEnvsCommand;
+export default listEnvsCommandModule;

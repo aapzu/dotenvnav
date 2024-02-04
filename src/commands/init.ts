@@ -12,7 +12,7 @@ import { getEnvFiles } from '../lib/getEnvFiles';
 
 import useEnvModule from './useEnv';
 
-const initCommand = createCommandModule({
+const initCommandModule = createCommandModule({
   command: 'init [env-name]',
   aliases: ['i'],
   describe: 'Initialize env variable links into a new directory',
@@ -66,4 +66,4 @@ const initCommand = createCommandModule({
   },
 });
 
-export default initCommand;
+export default initCommandModule;

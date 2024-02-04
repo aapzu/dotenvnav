@@ -2,7 +2,7 @@ import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 
-const listEnvFilesCommand = createCommandModule({
+const listEnvFilesCommandModule = createCommandModule({
   command: 'list-env-files [env-name]',
   aliases: ['list-envs'],
   describe: 'List all dotenv files under the project root',
@@ -28,4 +28,4 @@ const listEnvFilesCommand = createCommandModule({
   },
 });
 
-export default listEnvFilesCommand;
+export default listEnvFilesCommandModule;

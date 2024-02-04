@@ -6,7 +6,7 @@ import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
 
-const useEnvCommand = createCommandModule({
+const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',
   aliases: ['env <envName>', 'use <envName>', '$0 <envName>'],
   describe: 'Use an environment',
@@ -43,4 +43,4 @@ const useEnvCommand = createCommandModule({
   },
 });
 
-export default useEnvCommand;
+export default useEnvCommandModule;
