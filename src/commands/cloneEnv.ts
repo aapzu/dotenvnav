@@ -10,7 +10,7 @@ import {
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
 
-const cloneEnvCommand = createCommandModule({
+const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',
   aliases: ['clone'],
   describe: 'Clone an environment',
@@ -48,10 +48,8 @@ const cloneEnvCommand = createCommandModule({
         const configFilePath = resolve(fromPath, file);
         const newConfigFilePath = resolve(toPath, file);
 
-        const commonOpts = { overrideExisting, backup: false };
-
         await copy(configFilePath, newConfigFilePath, {
-          ...commonOpts,
+          overrideExisting,
         });
       }
     }, files);
@@ -60,4 +58,4 @@ const cloneEnvCommand = createCommandModule({
   },
 });
 
-export default cloneEnvCommand;
+export default cloneEnvCommandModule;

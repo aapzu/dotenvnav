@@ -5,7 +5,7 @@ import { logger } from '../lib/logger';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { createCommandModule } from '../lib/createCommandModule';
 
-const restoreCommand = createCommandModule({
+const restoreCommandModule = createCommandModule({
   command: 'restore [env-name]',
   describe: 'Restore env variables from a directory',
   builder: (yargs) =>
@@ -41,4 +41,4 @@ const restoreCommand = createCommandModule({
   },
 });
 
-export default restoreCommand;
+export default restoreCommandModule;
