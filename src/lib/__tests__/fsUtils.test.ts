@@ -1,7 +1,6 @@
 import fs from 'fs';
 
 import mock from 'mock-fs';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import {
   copy,

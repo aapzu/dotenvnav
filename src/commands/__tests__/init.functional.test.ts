@@ -1,10 +1,9 @@
 import fs from 'node:fs';
 
-import { describe, it, expect, afterEach } from 'vitest';
 import mock from 'mock-fs';
 import FileSystem from 'mock-fs/lib/filesystem';
 
-import { runCommand } from '../../lib/testUtils';
+import { runCommand } from '../../tests/testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
