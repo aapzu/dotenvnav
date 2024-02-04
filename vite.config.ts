@@ -3,9 +3,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    globals: true,
     restoreMocks: true,
-    minWorkers: 1,
-    maxWorkers: 1,
-    setupFiles: ['./src/setupTests.ts'],
+    setupFiles: ['./src/tests/setupTests.ts'],
+    typecheck: {
+      enabled: true,
+    },
   },
 });

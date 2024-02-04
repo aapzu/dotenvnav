@@ -1,7 +1,6 @@
 import { afterEach } from 'node:test';
 
 import mock from 'mock-fs';
-import { describe, it, expect } from 'vitest';
 
 import { getEnvs } from '../getEnvs';
 

@@ -20,18 +20,16 @@ const useEnvCommand = createCommandModule({
       })
       .check((argv) => checkEnv(argv['env-name'], argv['config-root'])),
   handler: async (opts) => {
-    const { configRoot, envName } = opts;
-
     const envFiles = await getEnvFiles(opts);
 
-    logger.info(`Using ${envName} env`);
+    logger.info(`Using ${opts.envName} env`);
 
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
           const configFileAbsolutePath = resolve(
-            configRoot,
-            envName,
+            opts.configRoot,
+            opts.envName,
             dotenvnavFileName,
           );
 

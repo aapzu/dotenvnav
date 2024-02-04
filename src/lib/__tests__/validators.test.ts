@@ -1,5 +1,3 @@
-import { describe, expect, vi, it } from 'vitest';
-
 import { checkEnv } from '../validators';
 import * as GetEnvs from '../getEnvs';
 

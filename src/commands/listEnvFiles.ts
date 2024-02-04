@@ -17,7 +17,7 @@ const listEnvFilesCommand = createCommandModule({
       `Searching for environment files with pattern ${options.envFileName}`,
     );
     const envFiles = await getEnvFiles(options);
-    console.log(
+    logger.info(
       envFiles
         .map(
           ({ dotenvnavFileName, projectPath }) =>
