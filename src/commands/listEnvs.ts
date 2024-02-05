@@ -9,7 +9,7 @@ const listEnvsCommandModule = createCommandModule({
   builder: (yargs) => yargs,
   handler: async ({ configRoot }) => {
     logger.info(`Getting environments from ${configRoot}`);
-    console.log((await getEnvs({ configRoot })).join('\n'));
+    logger.info((await getEnvs({ configRoot })).join('\n'));
   },
 });
 
