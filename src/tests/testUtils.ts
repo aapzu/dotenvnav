@@ -1,4 +1,4 @@
-import { parser } from '../parser';
+import { parser } from '../cli';
 
 export const runCommand = async (
   command: string,
