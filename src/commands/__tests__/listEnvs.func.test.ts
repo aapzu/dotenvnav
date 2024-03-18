@@ -1,6 +1,7 @@
 import { afterEach } from 'node:test';
 
 import mock from 'mock-fs';
+import chalk from 'chalk';
 
 import { runCommand } from '../../tests/testUtils';
 import { createMockLogger } from '../../tests/mockLogger';
@@ -45,9 +46,9 @@ describe('listEnvs command', () => {
     });
     const { info } = getLogs();
     expect(info).toEqual(`
-[97mGetting environments from .dotenvnav[39m
-[97mdefault[39m
-[97mdefault2[39m
-[97mtest[39m`);
+${chalk.whiteBright('Getting environments from .dotenvnav')}
+${chalk.whiteBright('default')}
+${chalk.whiteBright('default2')}
+${chalk.whiteBright('test')}`);
   });
 });
