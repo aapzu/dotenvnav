@@ -1,4 +1,4 @@
-import yargs from 'yargs';
+import yargs, { Argv } from 'yargs';
 import log from 'loglevel';
 
 import initCommandModule from './commands/init';
@@ -59,6 +59,6 @@ export const parser = commonYargs
   .version(false)
   .help();
 
-export type TCommonOptions = typeof commonYargs extends yargs.Argv<infer T>
+export type TCommonOptions = typeof commonYargs extends Argv<infer T>
   ? T
   : never;
