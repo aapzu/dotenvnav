@@ -16,6 +16,11 @@ import {
   isSymlink,
   readFileContent,
 } from '../fsUtils';
+import {
+  createMockSymLink,
+  expectFile,
+  expectFiles,
+} from '../../tests/testUtils';
 
 describe('fsUtils', () => {
   beforeEach(() => {
@@ -160,55 +165,91 @@ describe('fsUtils', () => {
     it('should override existing file if overrideExisting: true', async () => {
       await move('foo/test', 'bar/test', { overrideExisting: true });
       expect(await exists('foo/test')).toBeFalsy();
-      expect(fs.readFileSync('bar/test', 'utf8')).toBe('foo-test');
+      expectFile('bar/test', 'foo-test');
     });
 
     it('should not override existing file if overrideExisting: false', async () => {
       await move('foo/test', 'bar/test2', { overrideExisting: false });
       expect(await exists('foo/test')).toBeTruthy();
-      expect(fs.readFileSync('bar/test2', 'utf8')).toBe('bar-test2');
+      expectFile('bar/test2', 'bar-test2');
     });
   });
 
   describe('copy', () => {
     it('should copy file', async () => {
       await copy('foo/test', 'bar/test');
-      expect(fs.readFileSync('foo/test')).toEqual(fs.readFileSync('bar/test'));
+      expectFiles({
+        foo: {
+          test: 'foo-test',
+        },
+        bar: {
+          test: 'foo-test',
+        },
+      });
     });
 
     it('should override existing file if overrideExisting: true', async () => {
       await copy('foo/test', 'bar/test2', { overrideExisting: true });
-      expect(fs.readFileSync('foo/test')).toEqual(fs.readFileSync('bar/test2'));
+      expectFiles({
+        foo: {
+          test: 'foo-test',
+        },
+        bar: {
+          test2: 'foo-test',
+        },
+      });
     });
 
     it('should not override existing file if overrideExisting: false', async () => {
       await copy('foo/test', 'bar/test2', { overrideExisting: false });
-      expect(fs.readFileSync('bar/test2', 'utf8')).toBe('bar-test2');
+      expectFiles({
+        foo: {
+          test: 'foo-test',
+        },
+        bar: {
+          test2: 'bar-test2',
+        },
+      });
     });
   });
 
   describe('createSymlink', () => {
     it('should create symlink', async () => {
       await createSymlink('foo/test', 'bar/test');
-      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
-        'foo-test',
-      );
+      expectFiles({
+        bar: {
+          test: createMockSymLink('foo/test'),
+        },
+        foo: {
+          test: 'foo-test',
+        },
+      });
     });
 
     it('should override existing symlink if overrideExisting: true', async () => {
       fs.symlinkSync('foo/test', 'bar/test');
       await createSymlink('foo/test2', 'bar/test', { overrideExisting: true });
-      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
-        'foo-test2',
-      );
+      expectFiles({
+        bar: {
+          test: createMockSymLink('foo/test2'),
+        },
+        foo: {
+          test2: 'foo-test2',
+        },
+      });
     });
 
     it('should not override existing symlink if overrideExisting: false', async () => {
       fs.symlinkSync('foo/test', 'bar/test');
       await createSymlink('foo/test2', 'bar/test', { overrideExisting: false });
-      expect(fs.readFileSync(fs.readlinkSync('bar/test'), 'utf8')).toBe(
-        'foo-test',
-      );
+      expectFiles({
+        foo: {
+          test: 'foo-test',
+        },
+        bar: {
+          test: createMockSymLink('foo/test'),
+        },
+      });
     });
   });
 
