@@ -44,9 +44,6 @@ type TCommonOpts = {
 const isEnoentError = (err: unknown): err is Error =>
   !!err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT';
 
-const isInvalidArgumentError = (err: unknown): err is Error =>
-  !!err && typeof err === 'object' && 'code' in err && err.code === 'EINVAL';
-
 export const exists = async (filePath: string) => {
   try {
     await fs.lstat(filePath);
@@ -59,13 +56,11 @@ export const exists = async (filePath: string) => {
   }
 };
 
-export const symlinkExists = async (symlinkPath: string) => (
-  await exists(symlinkPath) && await isSymlink(symlinkPath)
-);
+export const symlinkExists = async (symlinkPath: string) =>
+  (await exists(symlinkPath)) && (await isSymlink(symlinkPath));
 
-export const fileExists = async (relativePath: string) => (
-  await exists(relativePath) && !(await isSymlink(relativePath))
-);
+export const fileExists = async (relativePath: string) =>
+  (await exists(relativePath)) && !(await isSymlink(relativePath));
 
 export const runActionWithBackup = async (
   action: () => Promise<void>,
@@ -213,10 +208,10 @@ export const remove = async (path: string) => {
 export const isSymlink = async (path: string) => {
   const stat = await fs.lstat(path);
   return stat.isSymbolicLink();
-}
+};
 
 export const readFileContent = async (path: string) => {
   const finalPath = await fs.realpath(path);
 
   return fs.readFile(finalPath, 'utf8');
-}
+};
