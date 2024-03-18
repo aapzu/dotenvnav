@@ -242,7 +242,7 @@ describe('fsUtils', () => {
       mock({
         'foo/test': 'foo-test',
         'bar/test': mock.symlink({ path: 'foo/test' }),
-      })
+      });
       expect(await isSymlink('bar/test')).toBeTruthy();
     });
 
@@ -254,13 +254,13 @@ describe('fsUtils', () => {
   describe('readFile', () => {
     it('should read file content', async () => {
       expect(await readFileContent('foo/test')).toBe('foo-test');
-    })
+    });
 
     it('should follow symlink', async () => {
       mock({
         '/foo/test': 'foo-test',
         '/bar/test': mock.symlink({ path: '/foo/test' }),
-      })
+      });
       expect(await readFileContent('/bar/test')).toBe('foo-test');
     });
   });
