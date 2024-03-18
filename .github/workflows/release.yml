@@ -1,0 +1,40 @@
+name: Release
+on:
+  push:
+    branches: 
+      - main
+    tags: 
+      - '*'
+jobs:
+  build:
+    uses: './.github/workflows/build.yml'
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.13.1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org/
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
+      - name: Create Release 
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          artifacts: 'dist/*'
+      - name: Publish to NPM
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
