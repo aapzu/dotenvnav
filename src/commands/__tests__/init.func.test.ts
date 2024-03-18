@@ -1,9 +1,11 @@
-import fs from 'node:fs';
-
 import mock from 'mock-fs';
 import FileSystem from 'mock-fs/lib/filesystem';
 
-import { runCommand } from '../../tests/testUtils';
+import {
+  createMockSymLink,
+  expectFiles,
+  runCommand,
+} from '../../tests/testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
@@ -34,7 +36,9 @@ describe('init command', () => {
       },
     });
     await runCommand('init', defaultOptions);
-    expect(fs.existsSync('/temp/.dotenvnav')).toBe(true);
+    expectFiles({
+      '/temp/.dotenvnav': {},
+    });
   });
 
   it('creates configRoot/envName if it does not exist', async () => {
@@ -48,7 +52,11 @@ describe('init command', () => {
       },
     });
     await runCommand('init', defaultOptions);
-    expect(fs.existsSync('/temp/.dotenvnav/testEnv')).toBe(true);
+    expectFiles({
+      '/temp/.dotenvnav': {
+        testEnv: {},
+      },
+    });
   });
 
   it('moves .env files to configRoot/envName', async () => {
@@ -63,8 +71,12 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
 
-    expect(fs.existsSync('/temp/.dotenvnav/testEnv/root.env')).toBe(true);
-    expect(fs.existsSync('/temp/.dotenvnav/testEnv/inner__.env')).toBe(true);
+    expectFiles({
+      '/temp/.dotenvnav/testEnv': {
+        'root.env': 'foo=bar',
+        'inner__.env': 'foobar=barfoo',
+      },
+    });
   });
 
   it('creates symlinks to .env files in the project root', async () => {
@@ -79,13 +91,13 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
 
-    expect(fs.existsSync('/temp/testProject/.env')).toBe(true);
-    expect(fs.readlinkSync('/temp/testProject/.env')).toBe(
-      '/temp/.dotenvnav/testEnv/root.env',
-    );
-    expect(fs.existsSync('/temp/testProject/inner/.env')).toBe(true);
-    expect(fs.readlinkSync('/temp/testProject/inner/.env')).toBe(
-      '/temp/.dotenvnav/testEnv/inner__.env',
-    );
+    expectFiles({
+      '/temp/testProject': {
+        '.env': createMockSymLink('/temp/.dotenvnav/testEnv/root.env'),
+        inner: {
+          '.env': createMockSymLink('/temp/.dotenvnav/testEnv/inner__.env'),
+        },
+      },
+    });
   });
 });
