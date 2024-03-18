@@ -13,6 +13,8 @@ import {
   createSymlink,
   createDirectoryIfNotExists,
   runActionWithBackup,
+  isSymlink,
+  readFileContent,
 } from '../fsUtils';
 
 describe('fsUtils', () => {
@@ -232,6 +234,34 @@ describe('fsUtils', () => {
       expect(await exists('bar')).toBeTruthy();
       await remove('bar');
       expect(await exists('bar')).toBeFalsy();
+    });
+  });
+
+  describe('isSymlink', () => {
+    it('should return true if file is symlink', async () => {
+      mock({
+        'foo/test': 'foo-test',
+        'bar/test': mock.symlink({ path: 'foo/test' }),
+      })
+      expect(await isSymlink('bar/test')).toBeTruthy();
+    });
+
+    it('should return false if file is not symlink', async () => {
+      expect(await isSymlink('foo/test')).toBeFalsy();
+    });
+  });
+
+  describe('readFile', () => {
+    it('should read file content', async () => {
+      expect(await readFileContent('foo/test')).toBe('foo-test');
+    })
+
+    it('should follow symlink', async () => {
+      mock({
+        '/foo/test': 'foo-test',
+        '/bar/test': mock.symlink({ path: '/foo/test' }),
+      })
+      expect(await readFileContent('/bar/test')).toBe('foo-test');
     });
   });
 });

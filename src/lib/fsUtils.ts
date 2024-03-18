@@ -47,21 +47,9 @@ const isEnoentError = (err: unknown): err is Error =>
 const isInvalidArgumentError = (err: unknown): err is Error =>
   !!err && typeof err === 'object' && 'code' in err && err.code === 'EINVAL';
 
-export const symlinkExists = async (symlinkPath: string) => {
+export const exists = async (filePath: string) => {
   try {
-    await fs.readlink(symlinkPath);
-    return true;
-  } catch (err: unknown) {
-    if (isEnoentError(err) || isInvalidArgumentError(err)) {
-      return false;
-    }
-    throw err;
-  }
-};
-
-export const fileExists = async (filePath: string) => {
-  try {
-    await fs.stat(filePath);
+    await fs.lstat(filePath);
     return true;
   } catch (err: unknown) {
     if (isEnoentError(err)) {
@@ -71,11 +59,13 @@ export const fileExists = async (filePath: string) => {
   }
 };
 
-export const exists = async (relativePath: string) => {
-  return (
-    (await fileExists(relativePath)) || (await symlinkExists(relativePath))
-  );
-};
+export const symlinkExists = async (symlinkPath: string) => (
+  await exists(symlinkPath) && await isSymlink(symlinkPath)
+);
+
+export const fileExists = async (relativePath: string) => (
+  await exists(relativePath) && !(await isSymlink(relativePath))
+);
 
 export const runActionWithBackup = async (
   action: () => Promise<void>,
@@ -219,3 +209,14 @@ export const remove = async (path: string) => {
     await fs.unlink(path);
   }
 };
+
+export const isSymlink = async (path: string) => {
+  const stat = await fs.lstat(path);
+  return stat.isSymbolicLink();
+}
+
+export const readFileContent = async (path: string) => {
+  const finalPath = await fs.realpath(path);
+
+  return fs.readFile(finalPath, 'utf8');
+}
