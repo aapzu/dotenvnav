@@ -4,9 +4,12 @@
   "description": "",
   "type": "module",
   "main": "src/index.ts",
-  "bin": "src/index.ts",
+  "bin": {
+    "dotenvnav": "dist/index.js"
+  },
   "scripts": {
     "start": "tsx src/index.ts",
+    "build": "tsc",
     "cli": "pnpm start",
     "test": "vitest",
     "lint": "eslint . --ext .ts",
