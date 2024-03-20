@@ -1,8 +1,7 @@
 {
   "name": "@aapzu/dotenvnav",
   "version": "0.0.6",
-  "description": "",
-  "type": "module",
+  "description": "A utility tool to store your project's local .env files in a single place, symlink them back to the project and change them to a different set of files with a single command.",
   "main": "src/index.ts",
   "bin": {
     "dotenvnav": "dist/index.js"
