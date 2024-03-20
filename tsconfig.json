@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "downlevelIteration": true,
     "types": ["vitest/globals"]
   },
