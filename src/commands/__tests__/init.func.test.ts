@@ -13,6 +13,7 @@ const defaultOptions = {
   overrideExisting: false,
   envName: 'testEnv',
   envFileName: '.env',
+  metadataFileName: '.envnav.json',
 };
 
 describe('init command', () => {
@@ -38,6 +39,30 @@ describe('init command', () => {
     await runCommand('init', defaultOptions);
     expectFiles({
       '/temp/.dotenvnav': {},
+    });
+  });
+
+  it('creates configRoot/metadataFile if it does not exist', async () => {
+    setup({
+      '.dotenvnav': {},
+      testProject: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
+        },
+      },
+    });
+    await runCommand('init', defaultOptions);
+    expectFiles({
+      '/temp/.dotenvnav': {
+        '.envnav.json': JSON.stringify(
+          {
+            projectRoot: '/temp/testProject',
+          },
+          null,
+          2,
+        ),
+      },
     });
   });
 

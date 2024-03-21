@@ -9,6 +9,7 @@ import {
 import { logger } from '../lib/logger';
 import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFiles } from '../lib/getEnvFiles';
+import { createMetadataFile } from '../lib/metadataFile';
 
 import useEnvModule from './useEnv';
 
@@ -34,6 +35,7 @@ const initCommandModule = createCommandModule({
     const { configRoot, overrideExisting, envName } = opts;
     logger.info('Initializing a new config dir');
     await createDirectoryIfNotExists(configRoot);
+    await createMetadataFile(opts);
     await createDirectoryIfNotExists(path.join(configRoot, envName));
 
     const envFiles = await getEnvFiles(opts);

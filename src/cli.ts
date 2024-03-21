@@ -7,6 +7,7 @@ import useEnvCommandModule from './commands/useEnv';
 import cloneEnvCommandModule from './commands/cloneEnv';
 import listEnvsCommandModule from './commands/listEnvs';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
+import { TKebabCaseKeysToCamelCase } from './types';
 
 log.setLevel('INFO');
 
@@ -25,6 +26,12 @@ const commonYargs = yargs(process.argv.slice(2))
     default: '~/.dotenvnav',
     normalize: true,
   })
+  .option('metadata-file-name', {
+    alias: 'm',
+    type: 'string',
+    description: 'Name of the metadata file',
+    default: '.envnav.json',
+  })
   .option('env-file-name', {
     alias: 'f',
     type: 'string',
@@ -36,6 +43,12 @@ const commonYargs = yargs(process.argv.slice(2))
     alias: 'v',
     type: 'boolean',
     description: 'Verbose',
+    default: false,
+  })
+  .option('dry-run', {
+    alias: 'd',
+    type: 'boolean',
+    description: 'Dry run',
     default: false,
   })
   .middleware((argv) => {
@@ -62,3 +75,5 @@ export const parser = commonYargs
 export type TCommonOptions = typeof commonYargs extends Argv<infer T>
   ? T
   : never;
+
+export type TCommonOptionsCamelCase = TKebabCaseKeysToCamelCase<TCommonOptions>;
