@@ -18,7 +18,7 @@ export const runCommand = async (
     ...Object.entries(options).map(([key, value]) => `--${key}=${value}`),
   ].join(' ');
 
-  return parser.parseAsync(args);
+  return parser.parse(args);
 };
 
 export const createMockSymLink = (to: string) => {
