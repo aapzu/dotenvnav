@@ -4,7 +4,6 @@ export const tsup: Options = {
   clean: true,
   dts: true,
   format: ['esm'],
-  minify: true,
   bundle: false,
   skipNodeModulesBundle: true,
   entryPoints: ['src/index.ts'],

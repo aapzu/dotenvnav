@@ -53,6 +53,7 @@ export const getEnvFiles = async ({
     {
       cwd: resolve(projectRoot),
       ignore: ['**/node_modules/**'],
+      followSymbolicLinks: true,
     },
   );
 
