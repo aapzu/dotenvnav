@@ -8,6 +8,7 @@ import cloneEnvCommandModule from './commands/cloneEnv';
 import listEnvsCommandModule from './commands/listEnvs';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
 import { TKebabCaseKeysToCamelCase } from './types';
+import { normalizePath } from './lib/normalizers';
 
 log.setLevel('INFO');
 
@@ -16,15 +17,15 @@ const commonYargs = yargs(process.argv.slice(2))
     alias: 'r',
     type: 'string',
     description: 'Path to the root directory of your project',
-    normalize: true,
     default: process.cwd(),
+    coerce: normalizePath,
   })
   .option('config-root', {
     alias: 'c',
     type: 'string',
     description: 'Path to the config root directory',
     default: '~/.dotenvnav',
-    normalize: true,
+    coerce: normalizePath,
   })
   .option('env-file-name', {
     alias: 'f',
