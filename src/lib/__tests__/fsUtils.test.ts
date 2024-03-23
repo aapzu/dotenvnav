@@ -16,7 +16,7 @@ import {
   isSymlink,
   readFileContent,
 } from '../fsUtils';
-import { createMockSymLink, expectFile, expectFiles } from '../../testUtils';
+import { expectFile, expectFiles } from '../../testUtils';
 
 describe('fsUtils', () => {
   beforeEach(() => {
@@ -214,7 +214,7 @@ describe('fsUtils', () => {
       await createSymlink('foo/test', 'bar/test');
       expectFiles({
         bar: {
-          test: createMockSymLink('foo/test'),
+          test: mock.symlink({ path: 'foo/test' }),
         },
         foo: {
           test: 'foo-test',
@@ -227,7 +227,7 @@ describe('fsUtils', () => {
       await createSymlink('foo/test2', 'bar/test', { overrideExisting: true });
       expectFiles({
         bar: {
-          test: createMockSymLink('foo/test2'),
+          test: mock.symlink({ path: 'foo/test2' }),
         },
         foo: {
           test2: 'foo-test2',
@@ -243,7 +243,7 @@ describe('fsUtils', () => {
           test: 'foo-test',
         },
         bar: {
-          test: createMockSymLink('foo/test'),
+          test: mock.symlink({ path: 'foo/test' }),
         },
       });
     });

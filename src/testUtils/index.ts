@@ -21,12 +21,6 @@ export const runCommand = async (
   return parser.parse(args);
 };
 
-export const createMockSymLink = (to: string) => {
-  const link = new SymbolicLink();
-  link.setPath(to);
-  return () => link;
-};
-
 export const expectFile = (
   filePath: string,
   value: FileSystem.DirectoryItem,

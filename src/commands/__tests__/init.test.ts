@@ -1,7 +1,7 @@
 import mock from 'mock-fs';
 import FileSystem from 'mock-fs/lib/filesystem';
 
-import { createMockSymLink, expectFiles, runCommand } from '../../testUtils';
+import { expectFiles, runCommand } from '../../testUtils';
 import { METADATA_FILE_NAME } from '../../consts';
 
 const defaultOptions = {
@@ -135,9 +135,11 @@ describe('init command', () => {
 
     expectFiles({
       '/temp/testProject': {
-        '.env': createMockSymLink('/temp/.dotenvnav/testEnv/root.env'),
+        '.env': mock.symlink({ path: '/temp/.dotenvnav/testEnv/root.env' }),
         inner: {
-          '.env': createMockSymLink('/temp/.dotenvnav/testEnv/inner__.env'),
+          '.env': mock.symlink({
+            path: '/temp/.dotenvnav/testEnv/inner__.env',
+          }),
         },
       },
     });

@@ -9,6 +9,7 @@ import { createMockLogger } from '../../testUtils/mockLogger';
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
+  envFileName: '.env',
 };
 
 describe('listEnvs command', () => {
