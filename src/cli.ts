@@ -31,7 +31,7 @@ const commonYargs = yargs(process.argv.slice(2))
     type: 'string',
     array: true,
     description: 'Name of the env file',
-    default: ['.env', '.env.local'],
+    default: ['.env.local'],
   })
   .option('verbose', {
     alias: 'v',
