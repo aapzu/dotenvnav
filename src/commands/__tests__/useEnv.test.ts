@@ -2,7 +2,6 @@ import mock from 'mock-fs';
 
 import {
   createMockMetadataFile,
-  createMockSymLink,
   expectFiles,
   runCommand,
 } from '../../testUtils';
@@ -10,6 +9,7 @@ import {
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/projectRoot',
+  envFileName: '.env',
 };
 
 describe('useEnv command', () => {
@@ -44,13 +44,13 @@ describe('useEnv command', () => {
     expectFiles({
       '/temp': {
         projectRoot: {
-          '.env': createMockSymLink('/temp/.dotenvnav/test/root.env'),
+          '.env': mock.symlink({ path: '/temp/.dotenvnav/test/root.env' }),
           inner: {
-            '.env': createMockSymLink('/temp/.dotenvnav/test/inner__.env'),
+            '.env': mock.symlink({ path: '/temp/.dotenvnav/test/inner__.env' }),
             doubleInner: {
-              '.env': createMockSymLink(
-                '/temp/.dotenvnav/test/inner__doubleInner__.env',
-              ),
+              '.env': mock.symlink({
+                path: '/temp/.dotenvnav/test/inner__doubleInner__.env',
+              }),
             },
           },
         },
@@ -76,15 +76,15 @@ describe('useEnv command', () => {
         },
         projectRoot: {
           '.env': mock.symlink({
-            path: '.dotenvnav/other/root.env',
+            path: '/temp/.dotenvnav/other/root.env',
           }),
           inner: {
             '.env': mock.symlink({
-              path: '.dotenvnav/other/inner__.env',
+              path: '/temp/.dotenvnav/other/inner__.env',
             }),
             doubleInner: {
               '.env': mock.symlink({
-                path: '.dotenvnav/other/inner__doubleInner__.env',
+                path: '/temp/.dotenvnav/other/inner__doubleInner__.env',
               }),
             },
             doubleInner2: {},
@@ -98,13 +98,13 @@ describe('useEnv command', () => {
 
     expectFiles({
       '/temp/projectRoot': {
-        '.env': createMockSymLink('/temp/.dotenvnav/test/root.env'),
+        '.env': mock.symlink({ path: '/temp/.dotenvnav/test/root.env' }),
         inner: {
-          '.env': createMockSymLink('/temp/.dotenvnav/test/inner__.env'),
+          '.env': mock.symlink({ path: '/temp/.dotenvnav/test/inner__.env' }),
           doubleInner: {
-            '.env': createMockSymLink(
-              '/temp/.dotenvnav/test/inner__doubleInner__.env',
-            ),
+            '.env': mock.symlink({
+              path: '/temp/.dotenvnav/test/inner__doubleInner__.env',
+            }),
           },
         },
       },

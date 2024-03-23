@@ -30,15 +30,15 @@ describe('restore command', () => {
         },
         projectRoot: {
           '.env': mock.symlink({
-            path: '.dotenvnav/test/root.env',
+            path: '/temp/.dotenvnav/test/root.env',
           }),
           inner: {
             '.env': mock.symlink({
-              path: '.dotenvnav/test/inner__.env',
+              path: '/temp/.dotenvnav/test/inner__.env',
             }),
             doubleInner: {
               '.env': mock.symlink({
-                path: '.dotenvnav/test/inner__doubleInner__.env',
+                path: '/temp/.dotenvnav/test/inner__doubleInner__.env',
               }),
             },
           },
@@ -74,7 +74,7 @@ describe('restore command', () => {
         },
         projectRoot: {
           '.env': mock.symlink({
-            path: '.dotenvnav/test/root.env',
+            path: '/temp/.dotenvnav/test/root.env',
           }),
         },
       },
