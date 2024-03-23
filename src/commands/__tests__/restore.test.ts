@@ -1,8 +1,13 @@
 import mock from 'mock-fs';
 
-import { runCommand } from '../../tests/testUtils';
-import { expectContent } from '../../tests/matchers';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
+import { expectContent } from '../../testUtils/matchers';
 import { isSymlink } from '../../lib/fsUtils';
+
+const defaultOptions = {
+  configRoot: '.dotenvnav',
+  projectRoot: 'projectRoot',
+};
 
 describe('restore command', () => {
   afterEach(() => {
@@ -13,6 +18,7 @@ describe('restore command', () => {
   it('should replace the symlink with the real files', async () => {
     mock({
       '.dotenvnav': {
+        ...createMockMetadataFile(defaultOptions.projectRoot),
         test: {
           'root.env': 'test=root',
           'inner__.env': 'test=inner',
@@ -36,10 +42,7 @@ describe('restore command', () => {
       },
     });
 
-    await runCommand('restore test', {
-      configRoot: '.dotenvnav',
-      projectRoot: 'projectRoot',
-    });
+    await runCommand('restore test', defaultOptions);
     await expectContent('projectRoot/.env', 'test=root');
     await expectContent('projectRoot/inner/.env', 'test=inner');
     await expectContent(
@@ -55,6 +58,7 @@ describe('restore command', () => {
   it('should not remove the files from the config directory', async () => {
     mock({
       '.dotenvnav': {
+        ...createMockMetadataFile(defaultOptions.projectRoot),
         test: {
           'root.env': 'test=root',
         },
@@ -65,10 +69,7 @@ describe('restore command', () => {
         }),
       },
     });
-    await runCommand('restore test', {
-      configRoot: '.dotenvnav',
-      projectRoot: 'projectRoot',
-    });
+    await runCommand('restore test', defaultOptions);
     await expectContent('.dotenvnav/test/root.env', 'test=root');
   });
 });

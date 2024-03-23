@@ -16,11 +16,7 @@ import {
   isSymlink,
   readFileContent,
 } from '../fsUtils';
-import {
-  createMockSymLink,
-  expectFile,
-  expectFiles,
-} from '../../tests/testUtils';
+import { createMockSymLink, expectFile, expectFiles } from '../../testUtils';
 
 describe('fsUtils', () => {
   beforeEach(() => {
