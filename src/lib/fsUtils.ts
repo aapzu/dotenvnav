@@ -10,6 +10,8 @@ const DRY_RUN_KEYS = [
   'symlink',
   'cp',
   'rename',
+  'mkdir',
+  'writeFile',
 ] satisfies (keyof typeof fsPromises)[];
 
 type TFsPromisesFunctionKey = keyof {
@@ -26,7 +28,11 @@ export const fs: typeof fsPromises = {
       ...acc,
       [key]: (...args: Parameters<(typeof fsPromises)[K]>) => {
         if (process.env.DRY_RUN) {
-          logger.info(`Dry run: ${key}(${args.join(', ')})`);
+          logger.debug(
+            `Running fs.${key} with args \n  ${args
+              .map((arg) => JSON.stringify(arg))
+              .join('\n  ')})`,
+          );
           return Promise.resolve();
         }
         // @ts-expect-error can't figure out how to type this
