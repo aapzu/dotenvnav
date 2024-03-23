@@ -5,6 +5,7 @@ import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
+import { validateMetadataFile } from '../lib/metadataFile';
 
 const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',
@@ -19,17 +20,21 @@ const useEnvCommandModule = createCommandModule({
         default: 'default',
       })
       .check((argv) => checkEnv(argv['env-name'], argv['config-root'])),
-  handler: async (opts) => {
-    const envFiles = await getEnvFiles(opts);
+  handler: async (args) => {
+    await validateMetadataFile(args);
 
-    logger.info(`Using ${opts.envName} env`);
+    const { envName, configRoot } = args;
+
+    const envFiles = await getEnvFiles(args);
+
+    logger.info(`Using ${envName} env`);
 
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
           const configFileAbsolutePath = resolve(
-            opts.configRoot,
-            opts.envName,
+            configRoot,
+            envName,
             dotenvnavFileName,
           );
 

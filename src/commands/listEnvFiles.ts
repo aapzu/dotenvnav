@@ -12,11 +12,10 @@ const listEnvFilesCommandModule = createCommandModule({
       description: 'Name of the environment',
       default: 'default',
     }),
-  handler: async (options) => {
-    logger.info(
-      `Searching for environment files with pattern ${options.envFileName}`,
-    );
-    const envFiles = await getEnvFiles(options);
+  handler: async (args) => {
+    const { envFileName } = args;
+    logger.info(`Searching for environment files with pattern ${envFileName}`);
+    const envFiles = await getEnvFiles(args);
     logger.info(
       envFiles
         .map(

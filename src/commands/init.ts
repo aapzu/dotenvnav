@@ -9,7 +9,7 @@ import {
 import { logger } from '../lib/logger';
 import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFiles } from '../lib/getEnvFiles';
-import { createMetadataFile } from '../lib/metadataFile';
+import { createMetadataFile, validateMetadataFile } from '../lib/metadataFile';
 
 import useEnvModule from './useEnv';
 
@@ -31,14 +31,19 @@ const initCommandModule = createCommandModule({
         description: 'Name of the environment',
         default: 'default',
       }),
-  handler: async (opts) => {
-    const { configRoot, overrideExisting, envName } = opts;
+  handler: async (args) => {
+    await validateMetadataFile({
+      ...args,
+      allowNotExists: true,
+    });
+
+    const { configRoot, overrideExisting, envName } = args;
     logger.info('Initializing a new config dir');
     await createDirectoryIfNotExists(configRoot);
-    await createMetadataFile(opts);
+    await createMetadataFile(args);
     await createDirectoryIfNotExists(path.join(configRoot, envName));
 
-    const envFiles = await getEnvFiles(opts);
+    const envFiles = await getEnvFiles(args);
 
     logger.info('Moving config files to the config dir');
 
@@ -64,7 +69,7 @@ const initCommandModule = createCommandModule({
       envFiles.map(({ projectPath }) => projectPath),
     );
 
-    await useEnvModule.handler(opts);
+    await useEnvModule.handler(args);
   },
 });
 

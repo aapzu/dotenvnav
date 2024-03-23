@@ -3,8 +3,8 @@ import { afterEach } from 'node:test';
 import mock from 'mock-fs';
 import chalk from 'chalk';
 
-import { runCommand } from '../../tests/testUtils';
-import { createMockLogger } from '../../tests/mockLogger';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
+import { createMockLogger } from '../../testUtils/mockLogger';
 
 describe('listEnvs command', () => {
   afterEach(() => {
@@ -16,6 +16,7 @@ describe('listEnvs command', () => {
     const { getLogs } = createMockLogger();
     mock({
       '.dotenvnav': {
+        ...createMockMetadataFile('testProject'),
         default: {
           'inner__directory__test__.env': '',
           'inner__directory__test2__.env': '',
@@ -43,6 +44,7 @@ describe('listEnvs command', () => {
     });
     await runCommand('list-envs', {
       configRoot: '.dotenvnav',
+      projectRoot: 'testProject',
     });
     const { info } = getLogs();
     expect(info).toEqual(`

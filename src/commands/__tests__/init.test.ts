@@ -1,11 +1,8 @@
 import mock from 'mock-fs';
 import FileSystem from 'mock-fs/lib/filesystem';
 
-import {
-  createMockSymLink,
-  expectFiles,
-  runCommand,
-} from '../../tests/testUtils';
+import { createMockSymLink, expectFiles, runCommand } from '../../testUtils';
+import { METADATA_FILE_NAME } from '../../consts';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
@@ -13,7 +10,6 @@ const defaultOptions = {
   overrideExisting: false,
   envName: 'testEnv',
   envFileName: '.env',
-  metadataFileName: '.envnav.json',
 };
 
 describe('init command', () => {
@@ -25,6 +21,27 @@ describe('init command', () => {
 
   afterEach(() => {
     mock.restore();
+  });
+
+  it('throws if the metadataFile.projectRoot does not match the given projectRoot', async () => {
+    setup({
+      '.dotenvnav': {
+        [METADATA_FILE_NAME]: JSON.stringify(
+          {
+            projectRoot: '/temp/otherProject',
+          },
+          null,
+          2,
+        ),
+      },
+      testProject: {
+        '.env': 'foo=bar',
+      },
+    });
+
+    await expect(runCommand('init', defaultOptions)).rejects.toThrow(
+      'The config root /temp/.dotenvnav was initialized using different project root (/temp/otherProject). Refusing to proceed.',
+    );
   });
 
   it('creates configRoot if it does not exist', async () => {
@@ -42,7 +59,7 @@ describe('init command', () => {
     });
   });
 
-  it('creates configRoot/metadataFile if it does not exist', async () => {
+  it('creates configRoot/metadataFile with correct content if it does not exist', async () => {
     setup({
       '.dotenvnav': {},
       testProject: {

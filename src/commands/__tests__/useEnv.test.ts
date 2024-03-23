@@ -1,7 +1,12 @@
 import mock from 'mock-fs';
 
-import { runCommand } from '../../tests/testUtils';
-import { expectSymbolicLink } from '../../tests/matchers';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
+import { expectSymbolicLink } from '../../testUtils/matchers';
+
+const defaultOptions = {
+  configRoot: '.dotenvnav',
+  projectRoot: 'projectRoot',
+};
 
 describe('useEnv command', () => {
   afterEach(() => {
@@ -12,6 +17,7 @@ describe('useEnv command', () => {
   it('should take the new env into use when the config files are entirely missing', async () => {
     mock({
       '.dotenvnav': {
+        ...createMockMetadataFile(defaultOptions.projectRoot),
         test: {
           'root.env': 'test=root',
           'inner__.env': 'test=inner',
@@ -27,10 +33,7 @@ describe('useEnv command', () => {
       },
     });
 
-    await runCommand('use-env test', {
-      configRoot: '.dotenvnav',
-      projectRoot: 'projectRoot',
-    });
+    await runCommand('use-env test', defaultOptions);
 
     await expectSymbolicLink('projectRoot/.env', '.dotenvnav/test/root.env');
     await expectSymbolicLink(
@@ -46,6 +49,7 @@ describe('useEnv command', () => {
   it('should overwrite existing config files with the new env', async () => {
     mock({
       '.dotenvnav': {
+        ...createMockMetadataFile(defaultOptions.projectRoot),
         test: {
           'root.env': 'test=root',
           'inner__.env': 'test=inner',
@@ -76,10 +80,7 @@ describe('useEnv command', () => {
       },
     });
 
-    await runCommand('use-env test', {
-      configRoot: '.dotenvnav',
-      projectRoot: 'projectRoot',
-    });
+    await runCommand('use-env test', defaultOptions);
 
     await expectSymbolicLink('projectRoot/.env', '.dotenvnav/test/root.env');
     await expectSymbolicLink(

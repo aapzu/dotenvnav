@@ -7,23 +7,19 @@ import MockFsFile from 'mock-fs/lib/file';
 import FileSystem from 'mock-fs/lib/filesystem';
 
 import { parser } from '../cli';
+import { METADATA_FILE_NAME } from '../consts';
 
 export const runCommand = async (
   command: string,
   options: Record<string, string | number | boolean>,
-) =>
-  new Promise<void>((resolve, reject) => {
-    const args = [
-      command,
-      ...Object.entries(options).map(([key, value]) => `--${key}=${value}`),
-    ].join(' ');
-    parser.parse(args, {}, (err) => {
-      if (err) {
-        reject(err);
-      }
-      resolve();
-    });
-  });
+) => {
+  const args = [
+    command,
+    ...Object.entries(options).map(([key, value]) => `--${key}=${value}`),
+  ].join(' ');
+
+  return parser.parseAsync(args);
+};
 
 export const createMockSymLink = (to: string) => {
   const link = new SymbolicLink();
@@ -68,3 +64,7 @@ export const expectFiles = (
     expectFile(key, value, rootPath);
   });
 };
+
+export const createMockMetadataFile = (projectRoot: string) => ({
+  [METADATA_FILE_NAME]: JSON.stringify({ projectRoot }, null, 2),
+});
