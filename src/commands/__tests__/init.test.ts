@@ -10,6 +10,7 @@ const defaultOptions = {
   overrideExisting: false,
   envName: 'testEnv',
   envFileName: '.env',
+  alwaysYes: true,
 };
 
 describe('init command', () => {

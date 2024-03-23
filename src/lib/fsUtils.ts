@@ -128,7 +128,9 @@ export const createDirectoryIfNotExists = async (directoryPath: string) => {
   const alreadyExists = await exists(directoryPath);
   if (!alreadyExists) {
     logger.debug(`Creating directory ${directoryPath}`);
-    await fs.mkdir(directoryPath);
+    await fs.mkdir(directoryPath, {
+      recursive: true,
+    });
   }
 };
 

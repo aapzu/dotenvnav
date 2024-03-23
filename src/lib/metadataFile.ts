@@ -16,7 +16,7 @@ const metadataFileSchema = z
 
 export type MetadataFile = z.infer<typeof metadataFileSchema>;
 
-const getMetadataFilePath = (configRoot: string) =>
+export const getMetadataFilePath = (configRoot: string) =>
   path.join(configRoot, METADATA_FILE_NAME);
 
 export const createMetadataFile = async ({
