@@ -4,10 +4,16 @@ import path from 'node:path';
 import mock from 'mock-fs';
 import chalk from 'chalk';
 
-import { runCommand } from '../../tests/testUtils';
-import { createMockLogger } from '../../tests/mockLogger';
+import { runCommand } from '../../testUtils';
+import { createMockLogger } from '../../testUtils/mockLogger';
 
 const root = path.join(__dirname, '..', '..', '..');
+
+const defaultOptions = {
+  configRoot: '.dotenvnav',
+  projectRoot: 'testProject',
+  envFileName: '.env',
+};
 
 describe('listEnvFiles command', () => {
   afterEach(() => {
@@ -36,11 +42,7 @@ describe('listEnvFiles command', () => {
         },
       },
     });
-    await runCommand('list-env-files default', {
-      configRoot: '.dotenvnav',
-      projectRoot: 'testProject',
-      envFileName: '.env',
-    });
+    await runCommand('list-env-files default', defaultOptions);
     const { info } = getLogs();
     expect(info).toEqual(`
 ${chalk.whiteBright('Searching for environment files with pattern .env')}

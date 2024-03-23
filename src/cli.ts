@@ -26,12 +26,6 @@ const commonYargs = yargs(process.argv.slice(2))
     default: '~/.dotenvnav',
     normalize: true,
   })
-  .option('metadata-file-name', {
-    alias: 'm',
-    type: 'string',
-    description: 'Name of the metadata file',
-    default: '.envnav.json',
-  })
   .option('env-file-name', {
     alias: 'f',
     type: 'string',
@@ -51,7 +45,7 @@ const commonYargs = yargs(process.argv.slice(2))
     description: 'Dry run',
     default: false,
   })
-  .middleware((argv) => {
+  .middleware(async (argv) => {
     if (argv['verbose']) {
       log.setLevel('DEBUG');
     }
@@ -70,6 +64,7 @@ export const parser = commonYargs
   .strict()
   .demandCommand()
   .version(false)
+  .recommendCommands()
   .help();
 
 export type TCommonOptions = typeof commonYargs extends Argv<infer T>

@@ -4,6 +4,7 @@ import { copy, runActionWithBackup } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { createCommandModule } from '../lib/createCommandModule';
+import { validateMetadataFile } from '../lib/metadataFile';
 
 const restoreCommandModule = createCommandModule({
   command: 'restore [env-name]',
@@ -15,12 +16,14 @@ const restoreCommandModule = createCommandModule({
       description: 'Name of the environment',
       default: 'default',
     }),
-  handler: async (opts) => {
-    const { configRoot, envName } = opts;
+  handler: async (args) => {
+    await validateMetadataFile(args);
+
+    const { configRoot, envName } = args;
 
     logger.info(`Restoring config files for environment ${envName}`);
 
-    const envFiles = await getEnvFiles(opts);
+    const envFiles = await getEnvFiles(args);
 
     await runActionWithBackup(
       async () => {

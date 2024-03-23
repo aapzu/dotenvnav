@@ -9,6 +9,7 @@ import {
 } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
+import { validateMetadataFile } from '../lib/metadataFile';
 
 const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',
@@ -33,7 +34,11 @@ const cloneEnvCommandModule = createCommandModule({
         default: false,
       })
       .check((argv) => checkEnv(argv['from-env-name'], argv['config-root'])),
-  handler: async ({ configRoot, fromEnvName, toEnvName, overrideExisting }) => {
+  handler: async (args) => {
+    await validateMetadataFile(args);
+
+    const { configRoot, fromEnvName, toEnvName, overrideExisting } = args;
+
     const fromPath = resolve(configRoot, fromEnvName);
     const toPath = resolve(configRoot, toEnvName);
 
