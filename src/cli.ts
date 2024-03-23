@@ -7,6 +7,7 @@ import useEnvCommandModule from './commands/useEnv';
 import cloneEnvCommandModule from './commands/cloneEnv';
 import listEnvsCommandModule from './commands/listEnvs';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
+import { TKebabCaseKeysToCamelCase } from './types';
 
 log.setLevel('INFO');
 
@@ -38,7 +39,13 @@ const commonYargs = yargs(process.argv.slice(2))
     description: 'Verbose',
     default: false,
   })
-  .middleware((argv) => {
+  .option('dry-run', {
+    alias: 'd',
+    type: 'boolean',
+    description: 'Dry run',
+    default: false,
+  })
+  .middleware(async (argv) => {
     if (argv['verbose']) {
       log.setLevel('DEBUG');
     }
@@ -57,8 +64,11 @@ export const parser = commonYargs
   .strict()
   .demandCommand()
   .version(false)
+  .recommendCommands()
   .help();
 
 export type TCommonOptions = typeof commonYargs extends Argv<infer T>
   ? T
   : never;
+
+export type TCommonOptionsCamelCase = TKebabCaseKeysToCamelCase<TCommonOptions>;

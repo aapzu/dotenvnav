@@ -215,3 +215,8 @@ export const readFileContent = async (path: string) => {
 
   return fs.readFile(finalPath, 'utf8');
 };
+
+export const writeFile = async (path: string, content: string) =>
+  fs.writeFile(path, content, {
+    encoding: 'utf8',
+  });
