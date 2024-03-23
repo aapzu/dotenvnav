@@ -54,8 +54,10 @@ describe('listEnvs command', () => {
     const { info } = getLogs();
     expect(info).toEqual(`
 ${chalk.whiteBright('Getting environments from /temp/.dotenvnav')}
+
 ${chalk.whiteBright('default')}
 ${chalk.whiteBright('default2')}
-${chalk.whiteBright('test')}`);
+${chalk.whiteBright('test')}
+`);
   });
 });
