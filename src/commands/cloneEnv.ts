@@ -10,6 +10,7 @@ import {
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
 import { validateMetadataFile } from '../lib/metadataFile';
+import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
 
 const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',
@@ -33,14 +34,25 @@ const cloneEnvCommandModule = createCommandModule({
         description: 'Override existing env',
         default: false,
       })
-      .check((argv) => checkEnv(argv['from-env-name'], argv['config-root'])),
+      .middleware(validateMetadataFile)
+      .check((argv) =>
+        checkEnv(
+          argv['from-env-name'],
+          argv['config-root'],
+          argv['project-root'],
+        ),
+      ),
   handler: async (args) => {
-    await validateMetadataFile(args);
+    const { fromEnvName, toEnvName, overrideExisting } = args;
 
-    const { configRoot, fromEnvName, toEnvName, overrideExisting } = args;
-
-    const fromPath = resolve(configRoot, fromEnvName);
-    const toPath = resolve(configRoot, toEnvName);
+    const fromPath = getConfigDirectoryWithEnv({
+      ...args,
+      envName: fromEnvName,
+    });
+    const toPath = getConfigDirectoryWithEnv({
+      ...args,
+      envName: toEnvName,
+    });
 
     logger.info(`Cloning environment ${fromEnvName} to ${toEnvName}`);
 

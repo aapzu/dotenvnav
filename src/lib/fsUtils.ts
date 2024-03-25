@@ -100,6 +100,7 @@ export const runActionWithBackup = async (
     logger.debug('Running action');
     await action();
 
+    logger.debug('Removing backups');
     await Promise.all(
       backupPaths.map(async (backupPath) => {
         if (await exists(backupPath)) {

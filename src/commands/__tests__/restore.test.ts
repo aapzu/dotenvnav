@@ -22,23 +22,25 @@ describe('restore command', () => {
       '/temp': {
         '.dotenvnav': {
           ...createMockMetadataFile(defaultOptions.projectRoot),
-          test: {
-            'root.env': 'test=root',
-            'inner__.env': 'test=inner',
-            'inner__doubleInner__.env': 'test=doubleInner',
+          testProject: {
+            test: {
+              'root.env': 'test=root',
+              'inner__.env': 'test=inner',
+              'inner__doubleInner__.env': 'test=doubleInner',
+            },
           },
         },
         projectRoot: {
           '.env': mock.symlink({
-            path: '/temp/.dotenvnav/test/root.env',
+            path: '/temp/.dotenvnav/testProject/test/root.env',
           }),
           inner: {
             '.env': mock.symlink({
-              path: '/temp/.dotenvnav/test/inner__.env',
+              path: '/temp/.dotenvnav/testProject/test/inner__.env',
             }),
             doubleInner: {
               '.env': mock.symlink({
-                path: '/temp/.dotenvnav/test/inner__doubleInner__.env',
+                path: '/temp/.dotenvnav/testProject/test/inner__doubleInner__.env',
               }),
             },
           },
@@ -68,13 +70,15 @@ describe('restore command', () => {
       '/temp': {
         '.dotenvnav': {
           ...createMockMetadataFile(defaultOptions.projectRoot),
-          test: {
-            'root.env': 'test=root',
+          testProject: {
+            test: {
+              'root.env': 'test=root',
+            },
           },
         },
         projectRoot: {
           '.env': mock.symlink({
-            path: '/temp/.dotenvnav/test/root.env',
+            path: '/temp/.dotenvnav/testProject/test/root.env',
           }),
         },
       },
@@ -83,8 +87,11 @@ describe('restore command', () => {
     expectFiles({
       '/temp': {
         '.dotenvnav': {
-          test: {
-            'root.env': 'test=root',
+          ...createMockMetadataFile(defaultOptions.projectRoot),
+          testProject: {
+            test: {
+              'root.env': 'test=root',
+            },
           },
         },
         projectRoot: {

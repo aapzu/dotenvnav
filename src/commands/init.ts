@@ -1,4 +1,4 @@
-import path, { resolve } from 'node:path';
+import path from 'node:path';
 
 import {
   createDirectoryIfNotExists,
@@ -9,8 +9,12 @@ import {
 import { logger } from '../lib/logger';
 import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFiles } from '../lib/getEnvFiles';
-import { createMetadataFile, validateMetadataFile } from '../lib/metadataFile';
+import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
 import { askOnce } from '../lib/prompt';
+import {
+  getConfigDirectoryWithEnv,
+  getConfigFilePath,
+} from '../lib/commonUtils';
 
 import useEnvModule from './useEnv';
 
@@ -37,24 +41,26 @@ const initCommandModule = createCommandModule({
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
-      }),
+      })
+      .middleware((args) =>
+        validateMetadataFile({
+          ...args,
+          allowNotExists: true,
+        }),
+      ),
   handler: async (args) => {
-    await validateMetadataFile({
-      ...args,
-      allowNotExists: true,
-    });
-
-    const envFiles = await getEnvFiles(args);
-
     const { configRoot, overrideExisting, envName, projectRoot, alwaysYes } =
       args;
+
     logger.info(
       `Initializing config directory in ${path.join(configRoot, envName)}`,
     );
 
-    await createDirectoryIfNotExists(path.join(configRoot, envName));
+    await createDirectoryIfNotExists(getConfigDirectoryWithEnv(args));
 
-    await createMetadataFile(args);
+    const envFiles = await getEnvFiles(args);
+
+    await upsertMetadataFile(args);
 
     if (envFiles.length === 0) {
       logger.info(`No env files found in ${projectRoot}, nothing to do`);
@@ -71,7 +77,7 @@ const initCommandModule = createCommandModule({
         path.basename(projectRoot),
         path.relative(projectRoot, f.projectPath),
       );
-      const toPath = path.join(configRoot, f.dotenvnavFileName);
+      const toPath = getConfigFilePath(f.dotenvnavFileName, args);
       return `${fromPath} -> ${toPath}`;
     })
     .join('\n  ')}`,
@@ -91,18 +97,20 @@ const initCommandModule = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { projectPath, dotenvnavFileName } of envFiles) {
-          const configFilePath = resolve(
-            configRoot,
-            envName,
-            dotenvnavFileName,
+          const relativeProjectFilePath = path.join(
+            path.basename(projectRoot),
+            path.relative(projectRoot, projectPath),
           );
+
+          const configFilePath = getConfigFilePath(dotenvnavFileName, {
+            configRoot,
+            projectRoot,
+            envName,
+          });
 
           if (await symlinkExists(projectPath)) {
             logger.info(
-              `${path.join(
-                path.basename(projectRoot),
-                path.relative(projectRoot, projectPath),
-              )} is already symlinked, skipping`,
+              `${relativeProjectFilePath} is already symlinked, skipping`,
             );
             continue;
           }
