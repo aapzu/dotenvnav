@@ -29,5 +29,5 @@ npx @aapzu/dotenvnav restore
 ## Print all commands and options
 
 ```sh
-npx dotenvnav [command] --help
+npx @aapzu/dotenvnav [command] --help
 ```
