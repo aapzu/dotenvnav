@@ -7,10 +7,11 @@ import { METADATA_FILE_NAME } from '../consts';
 
 import { exists, readFileContent, writeFile } from './fsUtils';
 import { logger } from './logger';
+import { getProjectName } from './commonUtils';
 
 const metadataFileSchema = z
   .object({
-    projectRoot: z.string(),
+    projects: z.record(z.string(), z.string()),
   })
   .strict();
 
@@ -19,12 +20,20 @@ export type MetadataFile = z.infer<typeof metadataFileSchema>;
 export const getMetadataFilePath = (configRoot: string) =>
   path.join(configRoot, METADATA_FILE_NAME);
 
-export const createMetadataFile = async ({
+export const upsertMetadataFile = async ({
   configRoot,
   projectRoot,
 }: Pick<TCommonOptionsCamelCase, 'configRoot' | 'projectRoot'>) => {
-  const metadata: MetadataFile = { projectRoot };
-  logger.debug('Creating metadata file');
+  const currentMetadataFile = (await exists(getMetadataFilePath(configRoot)))
+    ? await readMetadataFile({ configRoot })
+    : undefined;
+  const metadata: MetadataFile = {
+    projects: {
+      ...(currentMetadataFile?.projects ?? {}),
+      [getProjectName(projectRoot)]: projectRoot,
+    },
+  };
+  logger.debug('Creating or updating the metadata file');
   await writeFile(
     getMetadataFilePath(configRoot),
     JSON.stringify(metadata, null, 2),
@@ -74,9 +83,19 @@ export const validateMetadataFile = async ({
     );
   }
   const metadataFileContent = await readMetadataFile({ configRoot });
-  if (metadataFileContent.projectRoot !== projectRoot) {
+  const projectName = getProjectName(projectRoot);
+  const initializedWithProjectRoot = metadataFileContent.projects[projectName];
+  if (!initializedWithProjectRoot) {
+    if (allowNotExists) {
+      return;
+    }
     throw new Error(
-      `The config root ${configRoot} was initialized using different project root (${metadataFileContent.projectRoot}). Refusing to proceed.`,
+      `The project ${projectName} was not initialized. Please run 'init' first.`,
+    );
+  }
+  if (initializedWithProjectRoot !== projectRoot) {
+    throw new Error(
+      `The project ${projectName} was initialized using different project root (${initializedWithProjectRoot}). Refusing to proceed.`,
     );
   }
 };

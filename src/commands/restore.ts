@@ -10,15 +10,15 @@ const restoreCommandModule = createCommandModule({
   command: 'restore [env-name]',
   describe: 'Restore env variables from a directory',
   builder: (yargs) =>
-    yargs.positional('env-name', {
-      alias: 'e',
-      type: 'string',
-      description: 'Name of the environment',
-      default: 'default',
-    }),
+    yargs
+      .positional('env-name', {
+        alias: 'e',
+        type: 'string',
+        description: 'Name of the environment',
+        default: 'default',
+      })
+      .middleware(validateMetadataFile),
   handler: async (args) => {
-    await validateMetadataFile(args);
-
     const { configRoot, envName } = args;
 
     logger.info(`Restoring config files for environment ${envName}`);

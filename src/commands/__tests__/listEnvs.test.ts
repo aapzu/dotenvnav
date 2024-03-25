@@ -24,27 +24,28 @@ describe('listEnvs command', () => {
       '/temp': {
         '.dotenvnav': {
           ...createMockMetadataFile('/temp/testProject'),
-          default: {
-            'inner__directory__test__.env': '',
-            'inner__directory__test2__.env': '',
-          },
-          default2: {
-            'inner__directory__test__.env': '',
-            'inner__directory__test2__.env': '',
-          },
-          test: {
-            'inner__directory__test__.env': '',
-            'inner__directory__test2__.env': '',
-          },
-        },
-        testProject: {
-          '.env': '',
-          foobar: {
-            test: {
-              '.env': '',
+          testProject: {
+            default: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
             },
-            test2: {
-              '.env': '',
+            default2: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
+            },
+            test: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
+            },
+          },
+          testProject2: {
+            foo: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
+            },
+            bar: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
             },
           },
         },

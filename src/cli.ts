@@ -9,6 +9,7 @@ import listEnvsCommandModule from './commands/listEnvs';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
 import { TKebabCaseKeysToCamelCase } from './types';
 import { normalizePath } from './lib/normalizers';
+import { logger } from './lib/logger';
 
 log.setLevel('INFO');
 
@@ -53,6 +54,12 @@ const commonYargs = yargs(process.argv.slice(2))
     if (argv['dry-run']) {
       process.env.DRY_RUN = 'true';
     }
+  })
+  .fail((_msg, err) => {
+    if (err) {
+      logger.error(err.message);
+    }
+    process.exit(1);
   });
 
 export const parser = commonYargs
