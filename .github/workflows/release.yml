@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Exit if not on master branch
         if: endsWith(github.ref, 'master') == false
-        run: exit 0
+        run: exit -1
       - name: Checkout repository
         uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
