@@ -8,6 +8,7 @@ import FileSystem from 'mock-fs/lib/filesystem';
 
 import { parser } from '../cli';
 import { METADATA_FILE_NAME } from '../consts';
+import { getProjectName } from '../lib/commonUtils';
 
 export const runCommand = async (
   command: string,
@@ -45,7 +46,7 @@ export const expectFile = (
       throw new Error('Directories are not supported');
     }
   } else {
-    expect(fs.existsSync(fullPath)).toBe(true);
+    expect(fs.existsSync(fullPath), `Expected ${fullPath} to exist`).toBe(true);
     expectFiles(value, fullPath);
   }
 };
@@ -59,6 +60,12 @@ export const expectFiles = (
   });
 };
 
-export const createMockMetadataFile = (projectRoot: string) => ({
-  [METADATA_FILE_NAME]: JSON.stringify({ projectRoot }, null, 2),
+export const createMockMetadataFile = (
+  projectRoot: string,
+): Record<string, string> => ({
+  [METADATA_FILE_NAME]: JSON.stringify(
+    { projects: { [getProjectName(projectRoot)]: projectRoot } },
+    null,
+    2,
+  ),
 });

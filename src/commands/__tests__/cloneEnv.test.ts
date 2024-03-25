@@ -24,13 +24,12 @@ describe('cloneEnv command', () => {
     mock.restore();
   });
 
-  it('throws if the metadataFile.projectRoot does not match the given projectRoot', async () => {
+  it('throws if the metadataFile does not match the given projectRoot', async () => {
     setup({
       '.dotenvnav': {
-        ...createMockMetadataFile('/temp/otherProject'),
-        testEnv: {
-          'root.env': 'rootEnv=testEnv',
-          'inner__.env': 'innerEnv=testEnv',
+        ...createMockMetadataFile('/temp/foobar/testProject'),
+        testProject: {
+          testEnv: {},
         },
       },
       testProject: {
@@ -41,7 +40,7 @@ describe('cloneEnv command', () => {
     await expect(
       runCommand('clone-env testEnv testEnv2', defaultOptions),
     ).rejects.toThrow(
-      'The config root /temp/.dotenvnav was initialized using different project root (/temp/otherProject). Refusing to proceed.',
+      'The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.',
     );
   });
 
@@ -49,9 +48,11 @@ describe('cloneEnv command', () => {
     setup({
       '.dotenvnav': {
         ...createMockMetadataFile(defaultOptions.projectRoot),
-        testEnv: {
-          'root.env': 'rootEnv=testEnv',
-          'inner__.env': 'innerEnv=testEnv',
+        testProject: {
+          testEnv: {
+            'root.env': 'rootEnv=testEnv',
+            'inner__.env': 'innerEnv=testEnv',
+          },
         },
       },
     });
@@ -59,7 +60,7 @@ describe('cloneEnv command', () => {
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
 
     expectFiles({
-      '/temp/.dotenvnav/testEnv2': {
+      '/temp/.dotenvnav/testProject/testEnv2': {
         'root.env': 'rootEnv=testEnv',
         'inner__.env': 'innerEnv=testEnv',
       },
@@ -70,12 +71,14 @@ describe('cloneEnv command', () => {
     setup({
       '.dotenvnav': {
         ...createMockMetadataFile(defaultOptions.projectRoot),
-        testEnv: {
-          'root.env': 'rootEnv=testEnv',
-          'inner__.env': 'innerEnv=testEnv',
-        },
-        testEnv2: {
-          'root.env': 'rootEnv=testEnv2',
+        testProject: {
+          testEnv: {
+            'root.env': 'rootEnv=testEnv',
+            'inner__.env': 'innerEnv=testEnv',
+          },
+          testEnv2: {
+            'root.env': 'rootEnv=testEnv2',
+          },
         },
       },
     });
@@ -86,7 +89,7 @@ describe('cloneEnv command', () => {
     });
 
     expectFiles({
-      '/temp/.dotenvnav/testEnv2': {
+      '/temp/.dotenvnav/testProject/testEnv2': {
         'root.env': 'rootEnv=testEnv',
         'inner__.env': 'innerEnv=testEnv',
       },
@@ -97,11 +100,13 @@ describe('cloneEnv command', () => {
     setup({
       '.dotenvnav': {
         ...createMockMetadataFile(defaultOptions.projectRoot),
-        testEnv: {
-          'root.env': 'rootEnv=testEnv',
-        },
-        testEnv2: {
-          'root.env': 'rootEnv=testEnv2',
+        testProject: {
+          testEnv: {
+            'root.env': 'rootEnv=testEnv',
+          },
+          testEnv2: {
+            'root.env': 'rootEnv=testEnv2',
+          },
         },
       },
     });
@@ -109,7 +114,7 @@ describe('cloneEnv command', () => {
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
 
     expectFiles({
-      '/temp/.dotenvnav/testEnv': {
+      '/temp/.dotenvnav/testProject/testEnv': {
         'root.env': 'rootEnv=testEnv',
       },
     });

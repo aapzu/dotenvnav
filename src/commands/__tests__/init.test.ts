@@ -1,8 +1,11 @@
 import mock from 'mock-fs';
 import FileSystem from 'mock-fs/lib/filesystem';
 
-import { expectFiles, runCommand } from '../../testUtils';
-import { METADATA_FILE_NAME } from '../../consts';
+import {
+  createMockMetadataFile,
+  expectFiles,
+  runCommand,
+} from '../../testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
@@ -24,16 +27,10 @@ describe('init command', () => {
     mock.restore();
   });
 
-  it('throws if the metadataFile.projectRoot does not match the given projectRoot', async () => {
+  it('throws if the metadataFile does not match the given projectRoot', async () => {
     setup({
       '.dotenvnav': {
-        [METADATA_FILE_NAME]: JSON.stringify(
-          {
-            projectRoot: '/temp/otherProject',
-          },
-          null,
-          2,
-        ),
+        ...createMockMetadataFile('/temp/foobar/testProject'),
       },
       testProject: {
         '.env': 'foo=bar',
@@ -41,7 +38,7 @@ describe('init command', () => {
     });
 
     await expect(runCommand('init', defaultOptions)).rejects.toThrow(
-      'The config root /temp/.dotenvnav was initialized using different project root (/temp/otherProject). Refusing to proceed.',
+      'The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.',
     );
   });
 
@@ -73,18 +70,12 @@ describe('init command', () => {
     await runCommand('init', defaultOptions);
     expectFiles({
       '/temp/.dotenvnav': {
-        '.envnav.json': JSON.stringify(
-          {
-            projectRoot: '/temp/testProject',
-          },
-          null,
-          2,
-        ),
+        ...createMockMetadataFile(defaultOptions.projectRoot),
       },
     });
   });
 
-  it('creates configRoot/envName if it does not exist', async () => {
+  it('creates configRoot/projectName/envName if it does not exist', async () => {
     setup({
       '.dotenvnav': {},
       testProject: {
@@ -96,13 +87,11 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
     expectFiles({
-      '/temp/.dotenvnav': {
-        testEnv: {},
-      },
+      '/temp/.dotenvnav/testProject/testEnv': {},
     });
   });
 
-  it('moves .env files to configRoot/envName', async () => {
+  it('moves .env files to configRoot/projectName/envName', async () => {
     setup({
       '.dotenvnav': {},
       testProject: {
@@ -115,7 +104,7 @@ describe('init command', () => {
     await runCommand('init', defaultOptions);
 
     expectFiles({
-      '/temp/.dotenvnav/testEnv': {
+      '/temp/.dotenvnav/testProject/testEnv': {
         'root.env': 'foo=bar',
         'inner__.env': 'foobar=barfoo',
       },
@@ -136,10 +125,12 @@ describe('init command', () => {
 
     expectFiles({
       '/temp/testProject': {
-        '.env': mock.symlink({ path: '/temp/.dotenvnav/testEnv/root.env' }),
+        '.env': mock.symlink({
+          path: '/temp/.dotenvnav/testProject/testEnv/root.env',
+        }),
         inner: {
           '.env': mock.symlink({
-            path: '/temp/.dotenvnav/testEnv/inner__.env',
+            path: '/temp/.dotenvnav/testProject/testEnv/inner__.env',
           }),
         },
       },
