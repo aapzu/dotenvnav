@@ -7,13 +7,11 @@ const listEnvsCommandModule = createCommandModule({
   command: 'list-envs',
   aliases: ['envs'],
   describe: 'List all environments',
-  builder: (yargs) => yargs,
+  builder: (yargs) => yargs.middleware(validateMetadataFile),
   handler: async (args) => {
-    await validateMetadataFile(args);
-
     const { configRoot } = args;
     logger.info(`Getting environments from ${configRoot}`);
-    logger.info((await getEnvs({ configRoot })).join('\n'));
+    logger.info((await getEnvs(args)).join('\n'));
   },
 });
 

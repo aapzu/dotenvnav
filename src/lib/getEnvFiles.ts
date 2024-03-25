@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import fastGlob from 'fast-glob';
 
 import { logger } from './logger';
+import { getConfigDirectoryWithEnv } from './commonUtils';
 
 export type TGetEnvFilesOpts = {
   projectRoot: string;
@@ -35,17 +36,16 @@ const configFileNameToProjectFilePath = (
     .replace(new RegExp(`^root(${envFileNameRegex})`), '$1');
 };
 
-export const getEnvFiles = async ({
-  projectRoot,
-  envFileName,
-  configRoot,
-  envName,
-}: TGetEnvFilesOpts): Promise<
+export const getEnvFiles = async (
+  args: TGetEnvFilesOpts,
+): Promise<
   Array<{
     projectPath: string;
     dotenvnavFileName: string;
   }>
 > => {
+  const { projectRoot, envFileName } = args;
+
   const envFileNames = Array.isArray(envFileName) ? envFileName : [envFileName];
 
   const filesFromProject = await fastGlob(
@@ -63,7 +63,7 @@ export const getEnvFiles = async ({
 
   const filesFromConfig = await fastGlob(
     envFileNames.map((name) => `*${name}`),
-    { cwd: resolve(configRoot, envName) },
+    { cwd: getConfigDirectoryWithEnv(args) },
   );
 
   const allFiles = [

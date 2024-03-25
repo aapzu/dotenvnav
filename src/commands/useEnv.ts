@@ -1,11 +1,10 @@
-import { resolve } from 'node:path';
-
 import { createCommandModule } from '../lib/createCommandModule';
 import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { checkEnv } from '../lib/validators';
 import { validateMetadataFile } from '../lib/metadataFile';
+import { getConfigFilePath } from '../lib/commonUtils';
 
 const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',
@@ -19,11 +18,12 @@ const useEnvCommandModule = createCommandModule({
         description: 'Name of the environment',
         default: 'default',
       })
-      .check((argv) => checkEnv(argv['env-name'], argv['config-root'])),
+      .middleware(validateMetadataFile)
+      .check((argv) =>
+        checkEnv(argv['env-name'], argv['config-root'], argv['project-root']),
+      ),
   handler: async (args) => {
-    await validateMetadataFile(args);
-
-    const { envName, configRoot } = args;
+    const { envName, configRoot, projectRoot } = args;
 
     const envFiles = await getEnvFiles(args);
 
@@ -32,11 +32,11 @@ const useEnvCommandModule = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
-          const configFileAbsolutePath = resolve(
+          const configFileAbsolutePath = getConfigFilePath(dotenvnavFileName, {
             configRoot,
+            projectRoot,
             envName,
-            dotenvnavFileName,
-          );
+          });
 
           await createSymlink(configFileAbsolutePath, projectPath, {
             overrideExisting: true,

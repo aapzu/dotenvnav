@@ -23,9 +23,11 @@ describe('listEnvFiles command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          default: {
-            'inner__directory__test__.env': '',
-            'inner__directory__test2__.env': '',
+          testProject: {
+            default: {
+              'inner__directory__test__.env': '',
+              'inner__directory__test2__.env': '',
+            },
           },
         },
         testProject: {
