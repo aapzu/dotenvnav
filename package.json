@@ -46,6 +46,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "lint-staged": {
-    "*": ["biome check --fix"]
+    "*": ["biome check --fix --no-errors-on-unmatched"]
   }
 }
