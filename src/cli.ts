@@ -1,4 +1,4 @@
-import yargs, { Argv } from 'yargs';
+import yargs, { type Argv } from 'yargs';
 import log from 'loglevel';
 
 import initCommandModule from './commands/init';
@@ -7,7 +7,7 @@ import useEnvCommandModule from './commands/useEnv';
 import cloneEnvCommandModule from './commands/cloneEnv';
 import listEnvsCommandModule from './commands/listEnvs';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
-import { TKebabCaseKeysToCamelCase } from './types';
+import type { TKebabCaseKeysToCamelCase } from './types';
 import { normalizePath } from './lib/normalizers';
 import { logger } from './lib/logger';
 
@@ -48,7 +48,7 @@ const commonYargs = yargs(process.argv.slice(2))
     default: false,
   })
   .middleware(async (argv) => {
-    if (argv['verbose']) {
+    if (argv.verbose) {
       log.setLevel('DEBUG');
     }
     if (argv['dry-run']) {

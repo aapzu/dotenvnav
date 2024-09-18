@@ -4,7 +4,7 @@ import path from 'node:path';
 import Directory from 'mock-fs/lib/directory';
 import SymbolicLink from 'mock-fs/lib/symlink';
 import MockFsFile from 'mock-fs/lib/file';
-import FileSystem from 'mock-fs/lib/filesystem';
+import type FileSystem from 'mock-fs/lib/filesystem';
 
 import { parser } from '../cli';
 import { METADATA_FILE_NAME } from '../consts';
@@ -25,7 +25,7 @@ export const runCommand = async (
 export const expectFile = (
   filePath: string,
   value: FileSystem.DirectoryItem,
-  rootPath: string = '',
+  rootPath = '',
 ) => {
   const fullPath = path.join(rootPath, filePath);
   if (typeof value === 'string') {
@@ -53,11 +53,11 @@ export const expectFile = (
 
 export const expectFiles = (
   structure: FileSystem.DirectoryItems,
-  rootPath: string = '',
+  rootPath = '',
 ) => {
-  Object.entries(structure).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(structure)) {
     expectFile(key, value, rootPath);
-  });
+  }
 };
 
 export const createMockMetadataFile = (

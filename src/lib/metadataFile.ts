@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { z } from 'zod';
 
-import { TCommonOptionsCamelCase } from '../cli';
+import type { TCommonOptionsCamelCase } from '../cli';
 import { METADATA_FILE_NAME } from '../consts';
 
 import { exists, readFileContent, writeFile } from './fsUtils';

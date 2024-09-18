@@ -1,4 +1,4 @@
-import { TCommonOptionsCamelCase } from '../cli';
+import type { TCommonOptionsCamelCase } from '../cli';
 
 import { getConfigDirectory } from './commonUtils';
 import { exists, getFiles } from './fsUtils';

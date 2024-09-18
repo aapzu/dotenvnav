@@ -15,7 +15,7 @@ const DRY_RUN_KEYS = [
 ] satisfies (keyof typeof fsPromises)[];
 
 type TFsPromisesFunctionKey = keyof {
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // biome-ignore lint/complexity/noBannedTypes: will fix
   [K in keyof typeof fsPromises as (typeof fsPromises)[K] extends Function
     ? K
     : never]: true;
@@ -25,6 +25,7 @@ export const fs: typeof fsPromises = {
   ...fsPromises,
   ...DRY_RUN_KEYS.reduce<typeof fsPromises>(
     <K extends TFsPromisesFunctionKey>(acc: typeof fsPromises, key: K) => ({
+      // biome-ignore lint/performance/noAccumulatingSpread: will fix soon
       ...acc,
       [key]: (...args: Parameters<(typeof fsPromises)[K]>) => {
         if (process.env.DRY_RUN) {
