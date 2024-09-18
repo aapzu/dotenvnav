@@ -83,7 +83,7 @@ const initCommandModule = createCommandModule({
     .join('\n  ')}`,
     );
 
-    logger.info(`Do you want to continue? (y/n)`);
+    logger.info('Do you want to continue? (y/n)');
 
     const answer = alwaysYes || (await askOnce()).toLowerCase() === 'y';
 

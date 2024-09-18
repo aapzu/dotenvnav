@@ -12,14 +12,12 @@
     "build": "tsup $(find src -name '*.ts' -not -path '*/__tests__/*')",
     "cli": "pnpm start",
     "test": "vitest",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "biome lint",
+    "lint:fix": "pnpm lint --fix",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },
-  "keywords": [
-    "dotenv"
-  ],
+  "keywords": ["dotenv"],
   "author": "aapzu",
   "license": "MIT",
   "dependencies": {
@@ -35,19 +33,11 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.1",
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^20.10.5",
     "@types/yargs": "^17.0.32",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/parser": "^6.20.0",
-    "eslint": "^8.13.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-promise": "^6.0.0",
     "mock-fs": "^5.2.0",
-    "prettier": "^3.1.1",
-    "prettier-eslint": "^16.3.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   },
@@ -56,12 +46,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yaml}": [
-      "prettier --write"
-    ]
+    "*": ["biome check --fix"]
   }
 }

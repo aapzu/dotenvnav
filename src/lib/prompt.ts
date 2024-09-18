@@ -4,7 +4,7 @@ export const askOnce = () => {
   stdin.resume();
 
   return new Promise<string>((resolve) => {
-    stdin.once('data', function (data) {
+    stdin.once('data', (data) => {
       stdin.pause();
       resolve(data.toString().trim());
     });

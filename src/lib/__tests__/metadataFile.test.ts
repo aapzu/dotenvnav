@@ -108,8 +108,9 @@ describe('metadatafile', () => {
         },
       });
 
-      await expect(readMetadataFile({ configRoot: '/temp/.dotenvnav' })).rejects
-        .toThrow(`Invalid metadata file: {
+      await expect(
+        readMetadataFile({ configRoot: '/temp/.dotenvnav' }),
+      ).rejects.toThrow(`Invalid metadata file: {
   "_errors": [
     "Unrecognized key(s) in object: 'extra'"
   ],

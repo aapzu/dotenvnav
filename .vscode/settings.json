@@ -1,11 +1,5 @@
 {
-  "prettier.configPath": ".prettierrc",
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  "editor.defaultFormatter": "biomejs.biome",
   "files.exclude": {
     "node_modules": true
   },

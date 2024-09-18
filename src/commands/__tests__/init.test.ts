@@ -1,5 +1,5 @@
 import mock from 'mock-fs';
-import FileSystem from 'mock-fs/lib/filesystem';
+import type FileSystem from 'mock-fs/lib/filesystem';
 
 import {
   createMockMetadataFile,

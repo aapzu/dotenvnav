@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { TCommonOptionsCamelCase } from '../cli';
+import type { TCommonOptionsCamelCase } from '../cli';
 
 export const getProjectName = (projectRoot: string) =>
   path.basename(projectRoot);
