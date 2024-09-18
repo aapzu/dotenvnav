@@ -1,9 +1,5 @@
 {
-  "prettier.configPath": ".prettierrc",
   "editor.defaultFormatter": "biomejs.biome",
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "files.exclude": {
     "node_modules": true
   },

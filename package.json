@@ -17,9 +17,7 @@
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },
-  "keywords": [
-    "dotenv"
-  ],
+  "keywords": ["dotenv"],
   "author": "aapzu",
   "license": "MIT",
   "dependencies": {
@@ -40,7 +38,6 @@
     "@types/node": "^20.10.5",
     "@types/yargs": "^17.0.32",
     "mock-fs": "^5.2.0",
-    "prettier": "^3.1.1",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   },
@@ -49,12 +46,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "lint-staged": {
-    "*.ts": [
-      "biome lint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yaml}": [
-      "prettier --write"
-    ]
+    "*": ["biome check --fix"]
   }
 }
