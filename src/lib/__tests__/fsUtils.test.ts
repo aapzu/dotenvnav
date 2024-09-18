@@ -2,21 +2,21 @@ import fs from 'node:fs';
 
 import mock from 'mock-fs';
 
+import { expectFile, expectFiles } from '../../testUtils';
 import {
   copy,
+  createDirectoryIfNotExists,
+  createSymlink,
   exists,
   fileExists,
   getFiles,
-  move,
-  symlinkExists,
-  remove,
-  createSymlink,
-  createDirectoryIfNotExists,
-  runActionWithBackup,
   isSymlink,
+  move,
   readFileContent,
+  remove,
+  runActionWithBackup,
+  symlinkExists,
 } from '../fsUtils';
-import { expectFile, expectFiles } from '../../testUtils';
 
 describe('fsUtils', () => {
   beforeEach(() => {

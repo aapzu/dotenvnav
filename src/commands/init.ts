@@ -1,20 +1,20 @@
 import path from 'node:path';
 
 import {
+  getConfigDirectoryWithEnv,
+  getConfigFilePath,
+} from '../lib/commonUtils';
+import { createCommandModule } from '../lib/createCommandModule';
+import {
   createDirectoryIfNotExists,
   move,
   runActionWithBackup,
   symlinkExists,
 } from '../lib/fsUtils';
-import { logger } from '../lib/logger';
-import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFiles } from '../lib/getEnvFiles';
+import { logger } from '../lib/logger';
 import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
 import { askOnce } from '../lib/prompt';
-import {
-  getConfigDirectoryWithEnv,
-  getConfigFilePath,
-} from '../lib/commonUtils';
 
 import useEnvModule from './useEnv';
 

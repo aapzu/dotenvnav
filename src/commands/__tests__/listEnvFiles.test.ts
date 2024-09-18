@@ -1,7 +1,7 @@
 import { afterEach } from 'node:test';
 
-import mock from 'mock-fs';
 import chalk from 'chalk';
+import mock from 'mock-fs';
 
 import { runCommand } from '../../testUtils';
 import { createMockLogger } from '../../testUtils/mockLogger';

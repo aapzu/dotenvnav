@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 
+import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import {
   copy,
@@ -8,9 +9,8 @@ import {
   runActionWithBackup,
 } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
-import { checkEnv } from '../lib/validators';
 import { validateMetadataFile } from '../lib/metadataFile';
-import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
+import { checkEnv } from '../lib/validators';
 
 const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',

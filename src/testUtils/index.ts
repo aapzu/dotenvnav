@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import Directory from 'mock-fs/lib/directory';
-import SymbolicLink from 'mock-fs/lib/symlink';
 import MockFsFile from 'mock-fs/lib/file';
 import type FileSystem from 'mock-fs/lib/filesystem';
+import SymbolicLink from 'mock-fs/lib/symlink';
 
 import { parser } from '../cli';
 import { METADATA_FILE_NAME } from '../consts';

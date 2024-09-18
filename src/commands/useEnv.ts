@@ -1,10 +1,10 @@
+import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
 import { getEnvFiles } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
-import { checkEnv } from '../lib/validators';
 import { validateMetadataFile } from '../lib/metadataFile';
-import { getConfigFilePath } from '../lib/commonUtils';
+import { checkEnv } from '../lib/validators';
 
 const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',

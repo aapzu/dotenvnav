@@ -1,5 +1,5 @@
-import { checkEnv } from '../validators';
 import * as GetEnvs from '../getEnvs';
+import { checkEnv } from '../validators';
 
 describe('validators', () => {
   describe('checkEnv', () => {

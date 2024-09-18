@@ -5,9 +5,9 @@ import { z } from 'zod';
 import type { TCommonOptionsCamelCase } from '../cli';
 import { METADATA_FILE_NAME } from '../consts';
 
+import { getProjectName } from './commonUtils';
 import { exists, readFileContent, writeFile } from './fsUtils';
 import { logger } from './logger';
-import { getProjectName } from './commonUtils';
 
 const metadataFileSchema = z
   .object({

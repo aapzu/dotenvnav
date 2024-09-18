@@ -2,8 +2,8 @@ import { resolve } from 'node:path';
 
 import fastGlob from 'fast-glob';
 
-import { logger } from './logger';
 import { getConfigDirectoryWithEnv } from './commonUtils';
+import { logger } from './logger';
 
 export type TGetEnvFilesOpts = {
   projectRoot: string;

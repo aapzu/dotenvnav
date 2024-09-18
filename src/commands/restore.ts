@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 
-import { copy, runActionWithBackup } from '../lib/fsUtils';
-import { logger } from '../lib/logger';
-import { getEnvFiles } from '../lib/getEnvFiles';
 import { createCommandModule } from '../lib/createCommandModule';
+import { copy, runActionWithBackup } from '../lib/fsUtils';
+import { getEnvFiles } from '../lib/getEnvFiles';
+import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 
 const restoreCommandModule = createCommandModule({

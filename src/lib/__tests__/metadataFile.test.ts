@@ -1,12 +1,12 @@
 import mock from 'mock-fs';
 
+import { METADATA_FILE_NAME } from '../../consts';
+import { expectFiles } from '../../testUtils';
 import {
-  upsertMetadataFile,
   readMetadataFile,
+  upsertMetadataFile,
   validateMetadataFile,
 } from '../metadataFile';
-import { expectFiles } from '../../testUtils';
-import { METADATA_FILE_NAME } from '../../consts';
 
 describe('metadatafile', () => {
   describe('upsertMetadataFile', () => {

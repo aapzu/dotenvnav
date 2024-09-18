@@ -1,15 +1,15 @@
-import yargs, { type Argv } from 'yargs';
 import log from 'loglevel';
+import yargs, { type Argv } from 'yargs';
 
+import cloneEnvCommandModule from './commands/cloneEnv';
 import initCommandModule from './commands/init';
+import listEnvFilesCommandModule from './commands/listEnvFiles';
+import listEnvsCommandModule from './commands/listEnvs';
 import restoreCommandModule from './commands/restore';
 import useEnvCommandModule from './commands/useEnv';
-import cloneEnvCommandModule from './commands/cloneEnv';
-import listEnvsCommandModule from './commands/listEnvs';
-import listEnvFilesCommandModule from './commands/listEnvFiles';
-import type { TKebabCaseKeysToCamelCase } from './types';
-import { normalizePath } from './lib/normalizers';
 import { logger } from './lib/logger';
+import { normalizePath } from './lib/normalizers';
+import type { TKebabCaseKeysToCamelCase } from './types';
 
 log.setLevel('INFO');
 
