@@ -4,7 +4,7 @@ export const tsup: Options = {
   clean: true,
   dts: true,
   format: ['esm'],
-  bundle: false,
+  bundle: true,
   skipNodeModulesBundle: true,
   entryPoints: ['src/index.ts'],
   target: 'es2020',
