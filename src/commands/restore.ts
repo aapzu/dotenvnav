@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 
+import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { copy, runActionWithBackup } from '../lib/fsUtils';
 import { getEnvFiles } from '../lib/getEnvFiles';
@@ -19,7 +20,7 @@ const restoreCommandModule = createCommandModule({
       })
       .middleware(validateMetadataFile),
   handler: async (args) => {
-    const { configRoot, envName } = args;
+    const { configRoot, projectRoot, envName } = args;
 
     logger.info(`Restoring config files for environment ${envName}`);
 
@@ -28,13 +29,13 @@ const restoreCommandModule = createCommandModule({
     await runActionWithBackup(
       async () => {
         for (const { dotenvnavFileName, projectPath } of envFiles) {
-          const configFileAbsolutePath = resolve(
+          const configFilePath = getConfigFilePath(dotenvnavFileName, {
             configRoot,
+            projectRoot,
             envName,
-            dotenvnavFileName,
-          );
+          });
 
-          await copy(configFileAbsolutePath, projectPath, {
+          await copy(configFilePath, projectPath, {
             overrideExisting: true,
           });
         }
