@@ -28,25 +28,24 @@ export const expectFile = (
   rootPath = '',
 ) => {
   const fullPath = path.join(rootPath, filePath);
+
   if (typeof value === 'string') {
-    expect(fs.existsSync(fullPath)).toBe(true);
-    expect(fs.readFileSync(fullPath, 'utf-8')).toBe(value);
+    expect(fullPath).toExistFile();
+    expect(fullPath).toEqualTextFile(value);
   } else if (value instanceof Buffer) {
-    expect(fs.existsSync(fullPath)).toBe(true);
+    expect(fullPath).toExistFile();
     expect(fs.readFileSync(fullPath)).eql(value);
   } else if (typeof value === 'function') {
     const item = value();
     if (item instanceof SymbolicLink) {
-      expect(fs.lstatSync(fullPath).isSymbolicLink()).toBe(true);
-      expect(fs.readlinkSync(fullPath)).toBe(item.getPath());
+      expect(fullPath).toBeSymbolicLinkTo(item.getPath());
     } else if (item instanceof MockFsFile) {
-      expect(fs.existsSync(fullPath)).toBe(true);
-      expect(fs.readFileSync(fullPath, 'utf-8')).toBe(item.getContent());
+      expect(fullPath).toEqualTextFile(item.getContent());
     } else if (item instanceof Directory) {
       throw new Error('Directories are not supported');
     }
   } else {
-    expect(fs.existsSync(fullPath), `Expected ${fullPath} to exist`).toBe(true);
+    expect(fullPath).toExistFile();
     expectFiles(value, fullPath);
   }
 };

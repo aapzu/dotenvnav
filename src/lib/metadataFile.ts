@@ -27,13 +27,16 @@ export const upsertMetadataFile = async ({
   const currentMetadataFile = (await exists(getMetadataFilePath(configRoot)))
     ? await readMetadataFile({ configRoot })
     : undefined;
+
   const metadata: MetadataFile = {
     projects: {
       ...(currentMetadataFile?.projects ?? {}),
       [getProjectName(projectRoot)]: projectRoot,
     },
   };
+
   logger.debug('Creating or updating the metadata file');
+
   await writeFile(
     getMetadataFilePath(configRoot),
     JSON.stringify(metadata, null, 2),

@@ -50,7 +50,7 @@ describe('restore command', () => {
 
     await runCommand('restore test', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp': {
         projectRoot: {
           '.env': 'test=root',
@@ -62,7 +62,7 @@ describe('restore command', () => {
           },
         },
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('should not remove the files from the config directory', async () => {
@@ -84,7 +84,7 @@ describe('restore command', () => {
       },
     });
     await runCommand('restore test', defaultOptions);
-    expectFiles({
+    expect({
       '/temp': {
         '.dotenvnav': {
           ...createMockMetadataFile(defaultOptions.projectRoot),
@@ -98,6 +98,6 @@ describe('restore command', () => {
           '.env': 'test=root',
         },
       },
-    });
+    }).toMatchFileStructure();
   });
 });

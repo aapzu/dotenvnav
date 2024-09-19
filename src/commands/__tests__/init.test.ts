@@ -52,9 +52,9 @@ describe('init command', () => {
       },
     });
     await runCommand('init', defaultOptions);
-    expectFiles({
+    expect({
       '/temp/.dotenvnav': {},
-    });
+    }).toMatchFileStructure();
   });
 
   it('creates configRoot/metadataFile with correct content if it does not exist', async () => {
@@ -68,11 +68,11 @@ describe('init command', () => {
       },
     });
     await runCommand('init', defaultOptions);
-    expectFiles({
+    expect({
       '/temp/.dotenvnav': {
         ...createMockMetadataFile(defaultOptions.projectRoot),
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('creates configRoot/projectName/envName if it does not exist', async () => {
@@ -86,9 +86,9 @@ describe('init command', () => {
       },
     });
     await runCommand('init', defaultOptions);
-    expectFiles({
+    expect({
       '/temp/.dotenvnav/testProject/testEnv': {},
-    });
+    }).toMatchFileStructure();
   });
 
   it('moves .env files to configRoot/projectName/envName', async () => {
@@ -103,12 +103,12 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp/.dotenvnav/testProject/testEnv': {
         'root.env': 'foo=bar',
         'inner__.env': 'foobar=barfoo',
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('creates symlinks to .env files in the project root', async () => {
@@ -123,7 +123,7 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp/testProject': {
         '.env': mock.symlink({
           path: '/temp/.dotenvnav/testProject/testEnv/root.env',
@@ -134,6 +134,6 @@ describe('init command', () => {
           }),
         },
       },
-    });
+    }).toMatchFileStructure();
   });
 });

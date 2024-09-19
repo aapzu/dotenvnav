@@ -43,7 +43,7 @@ describe('useEnv command', () => {
 
     await runCommand('use-env test', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp': {
         testProject: {
           '.env': mock.symlink({
@@ -61,7 +61,7 @@ describe('useEnv command', () => {
           },
         },
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('should overwrite existing config files with the new env', async () => {
@@ -104,7 +104,7 @@ describe('useEnv command', () => {
 
     await runCommand('use-env test', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp/testProject': {
         '.env': mock.symlink({
           path: '/temp/.dotenvnav/testProject/test/root.env',
@@ -120,6 +120,6 @@ describe('useEnv command', () => {
           },
         },
       },
-    });
+    }).toMatchFileStructure();
   });
 });
