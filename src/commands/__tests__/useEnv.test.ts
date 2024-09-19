@@ -1,10 +1,6 @@
 import mock from 'mock-fs';
 
-import {
-  createMockMetadataFile,
-  expectFiles,
-  runCommand,
-} from '../../testUtils';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',

@@ -1,14 +1,10 @@
 import mock from 'mock-fs';
 
-import {
-  createMockMetadataFile,
-  expectFiles,
-  runCommand,
-} from '../../testUtils';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
-  projectRoot: '/temp/projectRoot',
+  projectRoot: '/temp/testProject',
 };
 
 describe('restore command', () => {
@@ -30,7 +26,7 @@ describe('restore command', () => {
             },
           },
         },
-        projectRoot: {
+        testProject: {
           '.env': mock.symlink({
             path: '/temp/.dotenvnav/testProject/test/root.env',
           }),
@@ -52,7 +48,7 @@ describe('restore command', () => {
 
     expect({
       '/temp': {
-        projectRoot: {
+        testProject: {
           '.env': 'test=root',
           inner: {
             '.env': 'test=inner',
@@ -76,7 +72,7 @@ describe('restore command', () => {
             },
           },
         },
-        projectRoot: {
+        testProject: {
           '.env': mock.symlink({
             path: '/temp/.dotenvnav/testProject/test/root.env',
           }),
@@ -94,7 +90,7 @@ describe('restore command', () => {
             },
           },
         },
-        projectRoot: {
+        testProject: {
           '.env': 'test=root',
         },
       },

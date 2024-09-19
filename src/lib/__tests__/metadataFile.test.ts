@@ -1,7 +1,6 @@
 import mock from 'mock-fs';
 
 import { METADATA_FILE_NAME } from '../../consts';
-import { expectFiles } from '../../testUtils';
 import {
   readMetadataFile,
   upsertMetadataFile,

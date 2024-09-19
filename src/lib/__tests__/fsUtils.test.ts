@@ -2,7 +2,6 @@ import fs from 'node:fs';
 
 import mock from 'mock-fs';
 
-import { expectFile, expectFiles } from '../../testUtils';
 import {
   copy,
   createDirectoryIfNotExists,
@@ -173,14 +172,14 @@ describe('fsUtils', () => {
       await move('/foo/test', '/bar/test', { overrideExisting: true });
 
       expect(await exists('/foo/test')).toBeFalsy();
-      expectFile('/bar/test', 'foo-test');
+      expect('/bar/test').toEqualFileValue('foo-test');
     });
 
     it('should not override existing file if overrideExisting: false', async () => {
       await move('/foo/test', '/bar/test2', { overrideExisting: false });
 
       expect(await exists('/foo/test')).toBeTruthy();
-      expectFile('/bar/test2', 'bar-test2');
+      expect('/bar/test2', 'bar-test2').toEqualFileValue('bar-test2');
     });
   });
 

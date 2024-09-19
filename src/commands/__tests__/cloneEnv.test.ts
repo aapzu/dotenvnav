@@ -1,11 +1,7 @@
 import mock from 'mock-fs';
 import type FileSystem from 'mock-fs/lib/filesystem';
 
-import {
-  createMockMetadataFile,
-  expectFiles,
-  runCommand,
-} from '../../testUtils';
+import { createMockMetadataFile, runCommand } from '../../testUtils';
 
 const defaultOptions = {
   configRoot: '/temp/.dotenvnav',
