@@ -20,13 +20,13 @@ describe('metadatafile', () => {
         projectRoot: '/temp/projectRootPath',
       });
 
-      expectFiles({
+      expect({
         [`/temp/.dotenvnav/${METADATA_FILE_NAME}`]: JSON.stringify(
           { projects: { projectRootPath: '/temp/projectRootPath' } },
           null,
           2,
         ),
-      });
+      }).toMatchFileStructure();
     });
 
     it('should update a metadata file', async () => {
@@ -49,7 +49,7 @@ describe('metadatafile', () => {
         projectRoot: '/temp/anotherProjectRootPath',
       });
 
-      expectFiles({
+      expect({
         [`/temp/.dotenvnav/${METADATA_FILE_NAME}`]: JSON.stringify(
           {
             projects: {
@@ -60,7 +60,7 @@ describe('metadatafile', () => {
           null,
           2,
         ),
-      });
+      }).toMatchFileStructure();
     });
   });
 

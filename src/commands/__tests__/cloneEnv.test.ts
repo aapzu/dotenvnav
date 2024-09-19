@@ -59,12 +59,12 @@ describe('cloneEnv command', () => {
 
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp/.dotenvnav/testProject/testEnv2': {
         'root.env': 'rootEnv=testEnv',
         'inner__.env': 'innerEnv=testEnv',
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('should override existing environment if override-existing is true', async () => {
@@ -88,12 +88,12 @@ describe('cloneEnv command', () => {
       overrideExisting: true,
     });
 
-    expectFiles({
+    expect({
       '/temp/.dotenvnav/testProject/testEnv2': {
         'root.env': 'rootEnv=testEnv',
         'inner__.env': 'innerEnv=testEnv',
       },
-    });
+    }).toMatchFileStructure();
   });
 
   it('should not override existing environment if override-existing is false', async () => {
@@ -113,10 +113,10 @@ describe('cloneEnv command', () => {
 
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
 
-    expectFiles({
+    expect({
       '/temp/.dotenvnav/testProject/testEnv': {
         'root.env': 'rootEnv=testEnv',
       },
-    });
+    }).toMatchFileStructure();
   });
 });
