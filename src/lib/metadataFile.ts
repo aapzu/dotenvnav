@@ -1,9 +1,6 @@
-import path from 'node:path';
-
 import { z } from 'zod';
 
 import type { TCommonOptionsCamelCase } from '../cli';
-import { METADATA_FILE_NAME } from '../consts';
 
 import { getProjectName } from './commonUtils';
 import { exists, readFileContent, writeFile } from './fsUtils';
@@ -11,24 +8,27 @@ import { logger } from './logger';
 
 const metadataFileSchema = z
   .object({
+    configRoot: z.string(),
     projects: z.record(z.string(), z.string()),
   })
   .strict();
 
 export type MetadataFile = z.infer<typeof metadataFileSchema>;
 
-export const getMetadataFilePath = (configRoot: string) =>
-  path.join(configRoot, METADATA_FILE_NAME);
-
 export const upsertMetadataFile = async ({
   configRoot,
   projectRoot,
-}: Pick<TCommonOptionsCamelCase, 'configRoot' | 'projectRoot'>) => {
-  const currentMetadataFile = (await exists(getMetadataFilePath(configRoot)))
-    ? await readMetadataFile({ configRoot })
+  metadataFilePath,
+}: Pick<
+  TCommonOptionsCamelCase,
+  'configRoot' | 'projectRoot' | 'metadataFilePath'
+>) => {
+  const currentMetadataFile = (await exists(metadataFilePath))
+    ? await readMetadataFile({ metadataFilePath })
     : undefined;
 
   const metadata: MetadataFile = {
+    configRoot,
     projects: {
       ...(currentMetadataFile?.projects ?? {}),
       [getProjectName(projectRoot)]: projectRoot,
@@ -37,16 +37,16 @@ export const upsertMetadataFile = async ({
 
   logger.debug('Creating or updating the metadata file');
 
-  await writeFile(
-    getMetadataFilePath(configRoot),
-    JSON.stringify(metadata, null, 2),
-  );
+  await writeFile(metadataFilePath, JSON.stringify(metadata, null, 2));
 };
 
 export const readMetadataFile = async ({
-  configRoot,
-}: Pick<TCommonOptionsCamelCase, 'configRoot'>): Promise<MetadataFile> => {
-  const fileContent = await readFileContent(getMetadataFilePath(configRoot));
+  metadataFilePath,
+}: Pick<
+  TCommonOptionsCamelCase,
+  'metadataFilePath'
+>): Promise<MetadataFile> => {
+  const fileContent = await readFileContent(metadataFilePath);
   let parsedMetadataFile: unknown;
   try {
     parsedMetadataFile = JSON.parse(fileContent);
@@ -67,15 +67,15 @@ export const readMetadataFile = async ({
 
 type TValidateMetadataFileOptions = Pick<
   TCommonOptionsCamelCase,
-  'configRoot' | 'projectRoot'
+  'projectRoot' | 'metadataFilePath' | 'configRoot'
 > & { allowNotExists?: boolean };
 
 export const validateMetadataFile = async ({
-  configRoot,
+  metadataFilePath,
   projectRoot,
+  configRoot,
   allowNotExists,
 }: TValidateMetadataFileOptions) => {
-  const metadataFilePath = getMetadataFilePath(configRoot);
   if (!(await exists(metadataFilePath))) {
     if (allowNotExists) {
       logger.debug('No metadata file found');
@@ -85,9 +85,17 @@ export const validateMetadataFile = async ({
       `Metadata file not found in ${metadataFilePath}. Please run 'init' first.`,
     );
   }
-  const metadataFileContent = await readMetadataFile({ configRoot });
+
+  const metadataFileContent = await readMetadataFile({ metadataFilePath });
   const projectName = getProjectName(projectRoot);
   const initializedWithProjectRoot = metadataFileContent.projects[projectName];
+
+  if (metadataFileContent.configRoot !== configRoot) {
+    throw new Error(
+      `The metadata file ${metadataFilePath} was initialized with different config root (${metadataFileContent.configRoot}). Refusing to proceed.`,
+    );
+  }
+
   if (!initializedWithProjectRoot) {
     if (allowNotExists) {
       return;

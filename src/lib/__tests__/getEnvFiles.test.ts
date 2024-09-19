@@ -28,6 +28,7 @@ describe('getEnvFiles', () => {
             },
             test2: {
               '.env': '',
+              '.env2': '',
             },
           },
         },
@@ -37,12 +38,16 @@ describe('getEnvFiles', () => {
       configRoot: '/temp/.dotenvnav',
       projectRoot: '/temp/testProject',
       envName: 'default',
-      envFileName: ['.env'],
+      envFileName: ['.env', '.env2'],
     });
     expect(envFiles).toEqual([
       {
         projectPath: '/temp/testProject/foobar/test2/.env',
         dotenvnavFileName: 'foobar__test2__.env',
+      },
+      {
+        projectPath: '/temp/testProject/foobar/test2/.env2',
+        dotenvnavFileName: 'foobar__test2__.env2',
       },
       {
         projectPath: '/temp/testProject/foobar/test/.env',

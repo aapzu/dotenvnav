@@ -35,6 +35,14 @@ const commonYargs = yargs(process.argv.slice(2))
     description: 'Name of the env file',
     default: ['.env.local'],
   })
+  .option('metadata-file-path', {
+    alias: 'm',
+    type: 'string',
+    path: true,
+    description: 'Path of the metadata file',
+    default: '~/.dotenvnav.json',
+    coerce: normalizePath,
+  })
   .option('verbose', {
     alias: 'v',
     type: 'boolean',
