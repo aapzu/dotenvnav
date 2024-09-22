@@ -8,7 +8,7 @@ import { checkEnv } from '../lib/validators';
 
 const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',
-  aliases: ['env <envName>', 'use <envName>', '$0 <envName>'],
+  aliases: ['env <envName>', 'use <envName>'],
   describe: 'Use an environment',
   builder: (yargs) =>
     yargs
