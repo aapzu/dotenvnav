@@ -1,10 +1,17 @@
 import mock from 'mock-fs';
 
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import type { YargsModuleArgs } from '../../types';
+import type restoreCommandModule from '../restore';
 
-const defaultOptions = {
+const defaultOptions: YargsModuleArgs<typeof restoreCommandModule> = {
+  metadataFilePath: '/temp/.envnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
+  verbose: false,
+  dryRun: false,
+  envFileName: ['.env'],
+  envName: 'default',
 };
 
 describe('restore command', () => {
@@ -17,7 +24,6 @@ describe('restore command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile(defaultOptions.projectRoot),
           testProject: {
             test: {
               'root.env': 'test=root',
@@ -42,6 +48,7 @@ describe('restore command', () => {
           },
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('restore test', defaultOptions);
@@ -65,7 +72,6 @@ describe('restore command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile(defaultOptions.projectRoot),
           testProject: {
             test: {
               'root.env': 'test=root',
@@ -78,12 +84,12 @@ describe('restore command', () => {
           }),
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
     await runCommand('restore test', defaultOptions);
     expect({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile(defaultOptions.projectRoot),
           testProject: {
             test: {
               'root.env': 'test=root',
@@ -94,6 +100,7 @@ describe('restore command', () => {
           '.env': 'test=root',
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     }).toMatchFileStructure();
   });
 });

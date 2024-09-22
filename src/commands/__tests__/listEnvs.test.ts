@@ -5,11 +5,16 @@ import mock from 'mock-fs';
 
 import { createMockMetadataFile, runCommand } from '../../testUtils';
 import { createMockLogger } from '../../testUtils/mockLogger';
+import type { YargsModuleArgs } from '../../types';
+import type listEnvsCommandModule from '../listEnvs';
 
-const defaultOptions = {
+const defaultOptions: YargsModuleArgs<typeof listEnvsCommandModule> = {
+  metadataFilePath: '/temp/.dotenvnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
-  envFileName: '.env',
+  envFileName: ['.env'],
+  verbose: false,
+  dryRun: false,
 };
 
 describe('listEnvs command', () => {
@@ -23,7 +28,6 @@ describe('listEnvs command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile('/temp/testProject'),
           testProject: {
             default: {
               'inner__directory__test__.env': '',
@@ -50,6 +54,7 @@ describe('listEnvs command', () => {
           },
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
     await runCommand('list-envs', defaultOptions);
     const { info } = getLogs();

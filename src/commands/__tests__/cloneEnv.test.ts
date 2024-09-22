@@ -2,18 +2,25 @@ import mock from 'mock-fs';
 import type FileSystem from 'mock-fs/lib/filesystem';
 
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import type { YargsModuleArgs } from '../../types';
+import type cloneEnvCommandModule from '../cloneEnv';
 
-const defaultOptions = {
+const defaultOptions: Omit<
+  YargsModuleArgs<typeof cloneEnvCommandModule>,
+  'toEnvName' | 'fromEnvName'
+> = {
+  metadataFilePath: '/temp/.envnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
+  envFileName: ['.env', '.env2'],
   overrideExisting: false,
+  verbose: false,
+  dryRun: false,
 };
 
 describe('cloneEnv command', () => {
   const setup = (files: FileSystem.DirectoryItems = {}) => {
-    mock({
-      '/temp': files,
-    });
+    mock(files);
   };
 
   afterEach(() => {
@@ -22,15 +29,20 @@ describe('cloneEnv command', () => {
 
   it('throws if the metadataFile does not match the given projectRoot', async () => {
     setup({
-      '.dotenvnav': {
-        ...createMockMetadataFile('/temp/foobar/testProject'),
+      '/temp': {
+        '.dotenvnav': {
+          testProject: {
+            testEnv: {},
+          },
+        },
         testProject: {
-          testEnv: {},
+          '.env': 'foo=bar',
         },
       },
-      testProject: {
-        '.env': 'foo=bar',
-      },
+      ...createMockMetadataFile({
+        ...defaultOptions,
+        projectRoot: '/temp/foobar/testProject',
+      }),
     });
 
     await expect(
@@ -42,15 +54,17 @@ describe('cloneEnv command', () => {
 
   it('should clone an environment', async () => {
     setup({
-      '.dotenvnav': {
-        ...createMockMetadataFile(defaultOptions.projectRoot),
-        testProject: {
-          testEnv: {
-            'root.env': 'rootEnv=testEnv',
-            'inner__.env': 'innerEnv=testEnv',
+      '/temp': {
+        '.dotenvnav': {
+          testProject: {
+            testEnv: {
+              'root.env': 'rootEnv=testEnv',
+              'inner__.env': 'innerEnv=testEnv',
+            },
           },
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
@@ -65,18 +79,20 @@ describe('cloneEnv command', () => {
 
   it('should override existing environment if override-existing is true', async () => {
     setup({
-      '.dotenvnav': {
-        ...createMockMetadataFile(defaultOptions.projectRoot),
-        testProject: {
-          testEnv: {
-            'root.env': 'rootEnv=testEnv',
-            'inner__.env': 'innerEnv=testEnv',
-          },
-          testEnv2: {
-            'root.env': 'rootEnv=testEnv2',
+      '/temp': {
+        '.dotenvnav': {
+          testProject: {
+            testEnv: {
+              'root.env': 'rootEnv=testEnv',
+              'inner__.env': 'innerEnv=testEnv',
+            },
+            testEnv2: {
+              'root.env': 'rootEnv=testEnv2',
+            },
           },
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('clone-env testEnv testEnv2', {
@@ -94,17 +110,19 @@ describe('cloneEnv command', () => {
 
   it('should not override existing environment if override-existing is false', async () => {
     setup({
-      '.dotenvnav': {
-        ...createMockMetadataFile(defaultOptions.projectRoot),
-        testProject: {
-          testEnv: {
-            'root.env': 'rootEnv=testEnv',
-          },
-          testEnv2: {
-            'root.env': 'rootEnv=testEnv2',
+      '/temp': {
+        '.dotenvnav': {
+          testProject: {
+            testEnv: {
+              'root.env': 'rootEnv=testEnv',
+            },
+            testEnv2: {
+              'root.env': 'rootEnv=testEnv2',
+            },
           },
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('clone-env testEnv testEnv2', defaultOptions);

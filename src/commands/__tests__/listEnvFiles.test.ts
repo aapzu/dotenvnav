@@ -5,11 +5,17 @@ import mock from 'mock-fs';
 
 import { runCommand } from '../../testUtils';
 import { createMockLogger } from '../../testUtils/mockLogger';
+import type { YargsModuleArgs } from '../../types';
+import type listEnvFilesCommandModule from '../listEnvFiles';
 
-const defaultOptions = {
+const defaultOptions: YargsModuleArgs<typeof listEnvFilesCommandModule> = {
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
-  envFileName: '.env',
+  envFileName: ['.env'],
+  metadataFilePath: '/temp/.envnav.json',
+  verbose: false,
+  dryRun: false,
+  envName: 'default',
 };
 
 describe('listEnvFiles command', () => {

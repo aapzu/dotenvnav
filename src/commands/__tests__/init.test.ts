@@ -2,21 +2,24 @@ import mock from 'mock-fs';
 import type FileSystem from 'mock-fs/lib/filesystem';
 
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import type { YargsModuleArgs } from '../../types';
+import type initCommandModule from '../init';
 
-const defaultOptions = {
+const defaultOptions: YargsModuleArgs<typeof initCommandModule> = {
+  metadataFilePath: '/temp/.envnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   overrideExisting: false,
   envName: 'testEnv',
-  envFileName: '.env',
+  envFileName: ['.env', '.env2'],
   alwaysYes: true,
+  dryRun: false,
+  verbose: false,
 };
 
 describe('init command', () => {
   const setup = (files: FileSystem.DirectoryItems = {}) => {
-    mock({
-      '/temp': files,
-    });
+    mock(files);
   };
 
   afterEach(() => {
@@ -25,11 +28,15 @@ describe('init command', () => {
 
   it('throws if the metadataFile does not match the given projectRoot', async () => {
     setup({
-      '.dotenvnav': {
-        ...createMockMetadataFile('/temp/foobar/testProject'),
-      },
-      testProject: {
-        '.env': 'foo=bar',
+      '/temp': {
+        '.dotenvnav': {},
+        testProject: {
+          '.env': 'foo=bar',
+        },
+        '.envnav.json': createMockMetadataFile({
+          ...defaultOptions,
+          projectRoot: '/temp/foobar/testProject',
+        })['/temp/.envnav.json'],
       },
     });
 
@@ -40,10 +47,12 @@ describe('init command', () => {
 
   it('creates configRoot if it does not exist', async () => {
     setup({
-      testProject: {
-        '.env': 'foo=bar',
-        inner: {
-          '.env': 'foobar=barfoo',
+      '/temp': {
+        testProject: {
+          '.env': 'foo=bar',
+          inner: {
+            '.env': 'foobar=barfoo',
+          },
         },
       },
     });
@@ -55,29 +64,32 @@ describe('init command', () => {
 
   it('creates configRoot/metadataFile with correct content if it does not exist', async () => {
     setup({
-      '.dotenvnav': {},
-      testProject: {
-        '.env': 'foo=bar',
-        inner: {
-          '.env': 'foobar=barfoo',
+      '/temp': {
+        '.dotenvnav': {},
+        testProject: {
+          '.env': 'foo=bar',
+          inner: {
+            '.env': 'foobar=barfoo',
+          },
         },
       },
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav': {
-        ...createMockMetadataFile(defaultOptions.projectRoot),
-      },
+      '/temp/.dotenvnav': {},
+      ...createMockMetadataFile(defaultOptions),
     }).toMatchFileStructure();
   });
 
   it('creates configRoot/projectName/envName if it does not exist', async () => {
     setup({
-      '.dotenvnav': {},
-      testProject: {
-        '.env': 'foo=bar',
-        inner: {
-          '.env': 'foobar=barfoo',
+      '/temp': {
+        '.dotenvnav': {},
+        testProject: {
+          '.env': 'foo=bar',
+          inner: {
+            '.env': 'foobar=barfoo',
+          },
         },
       },
     });
@@ -89,11 +101,13 @@ describe('init command', () => {
 
   it('moves .env files to configRoot/projectName/envName', async () => {
     setup({
-      '.dotenvnav': {},
-      testProject: {
-        '.env': 'foo=bar',
-        inner: {
-          '.env': 'foobar=barfoo',
+      '/temp': {
+        '.dotenvnav': {},
+        testProject: {
+          '.env': 'foo=bar',
+          inner: {
+            '.env': 'foobar=barfoo',
+          },
         },
       },
     });
@@ -109,11 +123,13 @@ describe('init command', () => {
 
   it('creates symlinks to .env files in the project root', async () => {
     setup({
-      '.dotenvnav': {},
-      testProject: {
-        '.env': 'foo=bar',
-        inner: {
-          '.env': 'foobar=barfoo',
+      '/temp': {
+        '.dotenvnav': {},
+        testProject: {
+          '.env': 'foo=bar',
+          inner: {
+            '.env': 'foobar=barfoo',
+          },
         },
       },
     });

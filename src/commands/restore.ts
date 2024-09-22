@@ -1,5 +1,3 @@
-import { resolve } from 'node:path';
-
 import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { copy, runActionWithBackup } from '../lib/fsUtils';

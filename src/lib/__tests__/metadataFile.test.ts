@@ -1,115 +1,94 @@
 import mock from 'mock-fs';
 
-import { METADATA_FILE_NAME } from '../../consts';
+import { createMockMetadataFile } from '../../testUtils';
 import {
   readMetadataFile,
   upsertMetadataFile,
   validateMetadataFile,
 } from '../metadataFile';
 
+const defaultOptions = {
+  metadataFilePath: '/temp/.envnav.json',
+  configRoot: '/temp/.dotenvnav',
+  projectRoot: '/temp/testProject',
+};
+
 describe('metadatafile', () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
   describe('upsertMetadataFile', () => {
     it('should create a metadata file', async () => {
       mock({
         '/temp/.dotenvnav': {},
       });
 
-      await upsertMetadataFile({
-        configRoot: '/temp/.dotenvnav',
-        projectRoot: '/temp/projectRootPath',
-      });
+      await upsertMetadataFile(defaultOptions);
 
       expect({
-        [`/temp/.dotenvnav/${METADATA_FILE_NAME}`]: JSON.stringify(
-          { projects: { projectRootPath: '/temp/projectRootPath' } },
-          null,
-          2,
-        ),
+        ...createMockMetadataFile(defaultOptions),
       }).toMatchFileStructure();
     });
 
     it('should update a metadata file', async () => {
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: JSON.stringify(
-            {
-              projects: {
-                projectRootPath: '/temp/projectRootPath',
-              },
-            },
-            null,
-            2,
-          ),
-        },
+        ...createMockMetadataFile(defaultOptions),
       });
 
-      await upsertMetadataFile({
-        configRoot: '/temp/.dotenvnav',
-        projectRoot: '/temp/anotherProjectRootPath',
-      });
+      const updatedOptions = {
+        ...defaultOptions,
+        configRoot: '/temp2/.dotenvnav',
+        projectRoot: '/temp2/testProject',
+      };
+
+      await upsertMetadataFile(updatedOptions);
 
       expect({
-        [`/temp/.dotenvnav/${METADATA_FILE_NAME}`]: JSON.stringify(
-          {
-            projects: {
-              projectRootPath: '/temp/projectRootPath',
-              anotherProjectRootPath: '/temp/anotherProjectRootPath',
-            },
-          },
-          null,
-          2,
-        ),
+        ...createMockMetadataFile(updatedOptions),
       }).toMatchFileStructure();
     });
   });
 
   describe('readMetadataFile', () => {
     it('should read a metadata file', async () => {
+      const metadataFile = createMockMetadataFile(defaultOptions);
+
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: JSON.stringify(
-            { projects: { projectRootPath: '/temp/projectRootPath' } },
-            null,
-            2,
-          ),
-        },
+        ...metadataFile,
       });
 
-      const metadata = await readMetadataFile({
-        configRoot: '/temp/.dotenvnav',
-      });
+      const metadata = await readMetadataFile(defaultOptions);
 
-      expect(metadata).toEqual({
-        projects: { projectRootPath: '/temp/projectRootPath' },
-      });
+      expect(metadata).toEqual(
+        JSON.parse(metadataFile[defaultOptions.metadataFilePath]),
+      );
     });
 
     it('should throw an error if the metadata file has invalid json in it', async () => {
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: 'invalid',
-        },
+        [defaultOptions.metadataFilePath]: 'invalid json',
       });
 
-      await expect(
-        readMetadataFile({ configRoot: '/temp/.dotenvnav' }),
-      ).rejects.toThrow('Invalid JSON in metadata file');
+      await expect(readMetadataFile(defaultOptions)).rejects.toThrow(
+        'Invalid JSON in metadata file',
+      );
     });
 
     it('should throw an error if the metadata file format is not valid', async () => {
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: JSON.stringify(
-            { projects: 1, extra: 'extra' },
-            null,
-            2,
-          ),
-        },
+        [defaultOptions.metadataFilePath]: JSON.stringify(
+          {
+            configRoot: 'foobar',
+            projects: 1,
+            extra: 'extra',
+          },
+          null,
+          2,
+        ),
       });
 
-      await expect(
-        readMetadataFile({ configRoot: '/temp/.dotenvnav' }),
-      ).rejects.toThrow(`Invalid metadata file: {
+      await expect(readMetadataFile(defaultOptions)).rejects.toThrow(`Invalid metadata file: {
   "_errors": [
     "Unrecognized key(s) in object: 'extra'"
   ],
@@ -124,71 +103,71 @@ describe('metadatafile', () => {
 
   describe('validateMetadataFile', () => {
     it('should not throw if metadata file is missing but called with allowNotExists=true', async () => {
-      mock({
-        '/temp/.dotenvnav': {},
-      });
+      mock({ '/temp': {} });
 
       await expect(
         validateMetadataFile({
-          configRoot: '/temp/.dotenvnav',
-          projectRoot: '/temp/projectRootPath',
+          ...defaultOptions,
           allowNotExists: true,
         }),
       ).resolves.not.toThrow();
     });
 
     it('should throw if metadata file is missing', async () => {
-      mock({
-        '/temp/.dotenvnav': {},
-      });
+      mock({ '/temp': {} });
 
-      await expect(
-        validateMetadataFile({
-          configRoot: '/temp/.dotenvnav',
-          projectRoot: '/temp/projectRootPath',
-        }),
-      ).rejects.toThrow(
-        "Metadata file not found in /temp/.dotenvnav/.envnav.json. Please run 'init' first",
+      await expect(validateMetadataFile(defaultOptions)).rejects.toThrow(
+        "Metadata file not found in /temp/.envnav.json. Please run 'init' first",
       );
     });
 
     it('should not throw if called with correct projectRoot', async () => {
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: JSON.stringify(
-            { projects: { projectRootPath: '/temp/projectRootPath' } },
-            null,
-            2,
-          ),
-        },
+        ...createMockMetadataFile(defaultOptions),
       });
 
-      await expect(
-        validateMetadataFile({
-          configRoot: '/temp/.dotenvnav',
-          projectRoot: '/temp/projectRootPath',
-        }),
-      ).resolves.not.toThrow();
+      await expect(validateMetadataFile(defaultOptions)).resolves.not.toThrow();
     });
 
     it('should throw if called with incorrect projectRoot', async () => {
       mock({
-        '/temp/.dotenvnav': {
-          [METADATA_FILE_NAME]: JSON.stringify(
-            { projects: { projectRootPath: '/temp/foobar/projectRootPath' } },
-            null,
-            2,
-          ),
-        },
+        ...createMockMetadataFile({
+          ...defaultOptions,
+          extraContent: {
+            projects: {
+              projectRootPath: '/temp/foobar/projectRootPath',
+            },
+          },
+        }),
       });
 
       await expect(
         validateMetadataFile({
-          configRoot: '/temp/.dotenvnav',
+          ...defaultOptions,
           projectRoot: '/temp/projectRootPath',
         }),
       ).rejects.toThrow(
         'The project projectRootPath was initialized using different project root (/temp/foobar/projectRootPath). Refusing to proceed.',
+      );
+    });
+
+    it('should throw if called with incorrect configRoot', async () => {
+      mock({
+        ...createMockMetadataFile({
+          ...defaultOptions,
+          extraContent: {
+            configRoot: '/temp2/.dotenvnav',
+          },
+        }),
+      });
+
+      await expect(
+        validateMetadataFile({
+          ...defaultOptions,
+          configRoot: '/temp/.dotenvnav',
+        }),
+      ).rejects.toThrow(
+        'The metadata file /temp/.envnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
       );
     });
   });

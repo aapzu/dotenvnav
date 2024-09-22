@@ -1,11 +1,17 @@
 import mock from 'mock-fs';
 
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import type { YargsModuleArgs } from '../../types';
+import type useEnvCommandModule from '../useEnv';
 
-const defaultOptions = {
+const defaultOptions: YargsModuleArgs<typeof useEnvCommandModule> = {
+  metadataFilePath: '/temp/.dotenvnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
-  envFileName: '.env',
+  envFileName: ['.env'],
+  envName: 'default',
+  verbose: false,
+  dryRun: false,
 };
 
 describe('useEnv command', () => {
@@ -18,7 +24,6 @@ describe('useEnv command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile(defaultOptions.projectRoot),
           testProject: {
             test: {
               'root.env': 'test=root',
@@ -35,6 +40,7 @@ describe('useEnv command', () => {
           inner2: {},
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('use-env test', defaultOptions);
@@ -64,7 +70,6 @@ describe('useEnv command', () => {
     mock({
       '/temp': {
         '.dotenvnav': {
-          ...createMockMetadataFile(defaultOptions.projectRoot),
           testProject: {
             test: {
               'root.env': 'test=root',
@@ -96,6 +101,7 @@ describe('useEnv command', () => {
           inner2: {},
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
 
     await runCommand('use-env test', defaultOptions);

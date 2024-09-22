@@ -3,6 +3,9 @@
   "files.exclude": {
     "node_modules": true
   },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true
 }
