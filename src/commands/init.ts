@@ -1,9 +1,6 @@
 import path from 'node:path';
 
-import {
-  getConfigDirectoryWithEnv,
-  getConfigFilePath,
-} from '../lib/commonUtils';
+import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import {
   createDirectoryIfNotExists,
@@ -11,11 +8,12 @@ import {
   runActionWithBackup,
   symlinkExists,
 } from '../lib/fsUtils';
-import { getEnvFiles } from '../lib/getEnvFiles';
+import { getEnvFilesFromProjectDir } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
 import { askOnce } from '../lib/prompt';
 
+import { getEvenColumns } from '../lib/loggerUtils';
 import useEnvModule from './useEnv';
 
 const initCommandModule = createCommandModule({
@@ -58,7 +56,7 @@ const initCommandModule = createCommandModule({
 
     await createDirectoryIfNotExists(getConfigDirectoryWithEnv(args));
 
-    const envFiles = await getEnvFiles(args);
+    const envFiles = await getEnvFilesFromProjectDir(args);
 
     await upsertMetadataFile(args);
 
@@ -71,16 +69,17 @@ const initCommandModule = createCommandModule({
 
     logger.info(
       `These symbolic links will be created:
-  ${envFiles
-    .map((f) => {
+  ${getEvenColumns(
+    envFiles.map((f) => {
       const fromPath = path.join(
         path.basename(projectRoot),
         path.relative(projectRoot, f.projectPath),
       );
-      const toPath = getConfigFilePath(f.dotenvnavFileName, args);
-      return `${fromPath} -> ${toPath}`;
-    })
-    .join('\n  ')}`,
+      const toPath = f.configDirPath;
+      return [fromPath, '->', toPath];
+    }),
+    2,
+  )}`,
     );
 
     logger.info('Do you want to continue? (y/n)');
@@ -96,29 +95,25 @@ const initCommandModule = createCommandModule({
 
     await runActionWithBackup(
       async () => {
-        for (const { projectPath, dotenvnavFileName } of envFiles) {
-          const relativeProjectFilePath = path.join(
-            path.basename(projectRoot),
-            path.relative(projectRoot, projectPath),
-          );
-
-          const configFilePath = getConfigFilePath(dotenvnavFileName, {
-            configRoot,
-            projectRoot,
-            envName,
-          });
-
-          if (await symlinkExists(projectPath)) {
-            logger.info(
-              `${relativeProjectFilePath} is already symlinked, skipping`,
+        await Promise.all(
+          envFiles.map(async ({ projectPath, configDirPath }) => {
+            const relativeProjectFilePath = path.join(
+              path.basename(projectRoot),
+              path.relative(projectRoot, projectPath),
             );
-            continue;
-          }
 
-          await move(projectPath, configFilePath, {
-            overrideExisting,
-          });
-        }
+            if (await symlinkExists(projectPath)) {
+              logger.info(
+                `${relativeProjectFilePath} is already symlinked, skipping`,
+              );
+              return;
+            }
+
+            await move(projectPath, configDirPath, {
+              overrideExisting,
+            });
+          }),
+        );
       },
       envFiles.map(({ projectPath }) => projectPath),
     );

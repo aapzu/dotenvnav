@@ -36,17 +36,7 @@ describe('listEnvFiles command', () => {
             },
           },
         },
-        testProject: {
-          '.env': '',
-          foobar: {
-            test: {
-              '.env': '',
-            },
-            test2: {
-              '.env': '',
-            },
-          },
-        },
+        testProject: {},
       },
     });
     await runCommand('list-env-files default', defaultOptions);
@@ -54,15 +44,8 @@ describe('listEnvFiles command', () => {
     expect(info).toEqual(`
 ${chalk.whiteBright('Searching for environment files with pattern .env')}
 
-${chalk.whiteBright('/temp/testProject/foobar/test2/.env\tfoobar__test2__.env')}
-${chalk.whiteBright('/temp/testProject/foobar/test/.env\tfoobar__test__.env')}
-${chalk.whiteBright(
-  '/temp/testProject/inner/directory/test2/.env\tinner__directory__test2__.env',
-)}
-${chalk.whiteBright(
-  '/temp/testProject/inner/directory/test/.env\tinner__directory__test__.env',
-)}
-${chalk.whiteBright('/temp/testProject/.env\troot.env')}
+${chalk.whiteBright('/temp/testProject/inner/directory/test2/.env  /temp/.dotenvnav/testProject/default/inner__directory__test2__.env')}
+${chalk.whiteBright('/temp/testProject/inner/directory/test/.env   /temp/.dotenvnav/testProject/default/inner__directory__test__.env ')}
 `);
   });
 });
