@@ -4,6 +4,7 @@
     "target": "es2020",
     "module": "esnext",
     "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,

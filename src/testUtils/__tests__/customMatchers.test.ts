@@ -58,8 +58,12 @@ describe('Custom Matchers', () => {
       expect('test-dir/buffer-file').toEqualTextFile(buffer);
     });
 
-    it('should pass with a symbolic link', () => {
-      expect('test-dir/link-file').toEqualTextFile('Hello, World!');
+    it('should fail with a symbolic link', () => {
+      expect(() => {
+        expect('test-dir/link-file').toEqualTextFile('Hello, World!');
+      }).toThrow(
+        'expected test-dir/link-file not to be a symbolic link, but it is',
+      );
     });
 
     it('should fail when file content does not equal the given text', () => {
@@ -153,7 +157,7 @@ describe('Custom Matchers', () => {
     });
   });
 
-  describe('toEqualFileStructure', () => {
+  describe('toMatchFileStructure', () => {
     it('should pass when the directory structure matches', () => {
       const expectedStructure = {
         'test-dir': {

@@ -1,7 +1,6 @@
-import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
-import { getEnvFiles } from '../lib/getEnvFiles';
+import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
@@ -22,26 +21,25 @@ const useEnvCommandModule = createCommandModule({
       .check((argv) =>
         checkEnv(argv['env-name'], argv['config-root'], argv['project-root']),
       ),
-  handler: async (args) => {
-    const { envName, configRoot, projectRoot } = args;
-
-    const envFiles = await getEnvFiles(args);
+  handler: async ({ envName, configRoot, projectRoot, envFileName }) => {
+    const envFiles = await getEnvFilesFromConfigDir({
+      envName,
+      configRoot,
+      projectRoot,
+      envFileName,
+    });
 
     logger.info(`Using ${envName} env`);
 
     await runActionWithBackup(
       async () => {
-        for (const { dotenvnavFileName, projectPath } of envFiles) {
-          const configFileAbsolutePath = getConfigFilePath(dotenvnavFileName, {
-            configRoot,
-            projectRoot,
-            envName,
-          });
-
-          await createSymlink(configFileAbsolutePath, projectPath, {
-            overrideExisting: true,
-          });
-        }
+        await Promise.all(
+          envFiles.map(({ configDirPath, projectPath }) =>
+            createSymlink(configDirPath, projectPath, {
+              overrideExisting: true,
+            }),
+          ),
+        );
       },
       envFiles.map(({ projectPath }) => projectPath),
     );

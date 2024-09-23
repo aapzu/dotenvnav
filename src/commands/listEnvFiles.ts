@@ -1,6 +1,7 @@
 import { createCommandModule } from '../lib/createCommandModule';
-import { getEnvFiles } from '../lib/getEnvFiles';
+import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
+import { getEvenColumns } from '../lib/loggerUtils';
 
 const listEnvFilesCommandModule = createCommandModule({
   command: 'list-env-files [env-name]',
@@ -15,15 +16,11 @@ const listEnvFilesCommandModule = createCommandModule({
   handler: async (args) => {
     const { envFileName } = args;
     logger.info(`Searching for environment files with pattern ${envFileName}`);
-    const envFiles = await getEnvFiles(args);
-    logger.info(
-      envFiles
-        .map(
-          ({ dotenvnavFileName, projectPath }) =>
-            `${projectPath}\t${dotenvnavFileName}`,
-        )
-        .join('\n'),
+    const envFilesInConfigDir = await getEnvFilesFromConfigDir(args);
+    const columns = envFilesInConfigDir.map(
+      ({ projectPath, configDirPath }) => [projectPath, configDirPath],
     );
+    logger.info(getEvenColumns(columns, 2));
   },
 });
 

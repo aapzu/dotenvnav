@@ -124,4 +124,73 @@ describe('useEnv command', () => {
       },
     }).toMatchFileStructure();
   });
+
+  it('should only go through the files in config dir, not all env files in the project', async () => {
+    mock({
+      '/temp': {
+        '.dotenvnav': {
+          testProject: {
+            test: {
+              'root.env': 'test=root',
+              'inner__.env': 'test=inner',
+              'inner__doubleInner__.env': 'test=doubleInner',
+            },
+            other: {
+              'root.env': 'other=root',
+              'inner__.env': 'other=inner',
+              'doubleInner__.env': 'other=doubleInner',
+            },
+          },
+        },
+        testProject: {
+          '.env': mock.symlink({
+            path: '/temp/.dotenvnav/testProject/other/root.env',
+          }),
+          inner: {
+            '.env': mock.symlink({
+              path: '/temp/.dotenvnav/testProject/other/inner__.env',
+            }),
+            doubleInner: {
+              '.env': mock.symlink({
+                path: '/temp/.dotenvnav/testProject/other/inner__doubleInner__.env',
+              }),
+            },
+            doubleInner2: {
+              '.env': 'doubleInner2',
+            },
+          },
+          inner2: {
+            '.env': 'inner2',
+          },
+        },
+      },
+      ...createMockMetadataFile(defaultOptions),
+    });
+
+    await runCommand('use-env test', defaultOptions);
+
+    expect({
+      '/temp/testProject': {
+        '.env': mock.symlink({
+          path: '/temp/.dotenvnav/testProject/test/root.env',
+        }),
+        inner: {
+          '.env': mock.symlink({
+            path: '/temp/.dotenvnav/testProject/test/inner__.env',
+          }),
+          doubleInner: {
+            '.env': mock.symlink({
+              path: '/temp/.dotenvnav/testProject/test/inner__doubleInner__.env',
+            }),
+          },
+          doubleInner2: {
+            '.env': 'doubleInner2',
+          },
+        },
+        inner2: {
+          '.env': 'inner2',
+        },
+      },
+    }).toMatchFileStructure();
+  });
 });

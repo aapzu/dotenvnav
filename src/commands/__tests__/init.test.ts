@@ -58,7 +58,14 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav': {},
+      '/temp/.dotenvnav': {
+        testProject: {
+          testEnv: {
+            'root.env': 'foo=bar',
+            'inner__.env': 'foobar=barfoo',
+          },
+        },
+      },
     }).toMatchFileStructure();
   });
 
@@ -76,7 +83,14 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav': {},
+      '/temp/.dotenvnav': {
+        testProject: {
+          testEnv: {
+            'root.env': 'foo=bar',
+            'inner__.env': 'foobar=barfoo',
+          },
+        },
+      },
       ...createMockMetadataFile(defaultOptions),
     }).toMatchFileStructure();
   });
@@ -95,7 +109,10 @@ describe('init command', () => {
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav/testProject/testEnv': {},
+      '/temp/.dotenvnav/testProject/testEnv': {
+        'root.env': 'foo=bar',
+        'inner__.env': 'foobar=barfoo',
+      },
     }).toMatchFileStructure();
   });
 
