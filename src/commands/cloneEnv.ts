@@ -1,13 +1,9 @@
-import { resolve } from 'node:path';
+import path from 'node:path';
 
-import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
+import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
-import {
-  copy,
-  createDirectoryIfNotExists,
-  getFiles,
-  runActionWithBackup,
-} from '../lib/fsUtils';
+import { forEachEnvFile } from '../lib/forAllEnvFiles';
+import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
@@ -42,34 +38,21 @@ const cloneEnvCommandModule = createCommandModule({
           argv['project-root'],
         ),
       ),
-  handler: async (args) => {
-    const { fromEnvName, toEnvName, overrideExisting } = args;
+  handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
+    await forEachEnvFile(
+      async ({ configDirPath }) => {
+        const configFilePath = configDirPath;
+        const newConfigFilePath = getConfigFilePath(
+          path.basename(configDirPath),
+          { ...args, envName: toEnvName },
+        );
 
-    const fromPath = getConfigDirectoryWithEnv({
-      ...args,
-      envName: fromEnvName,
-    });
-    const toPath = getConfigDirectoryWithEnv({
-      ...args,
-      envName: toEnvName,
-    });
+        await createDirectoryIfNotExists(path.dirname(newConfigFilePath));
 
-    logger.info(`Cloning environment ${fromEnvName} to ${toEnvName}`);
-
-    await createDirectoryIfNotExists(toPath);
-
-    const files = await getFiles(fromPath);
-
-    await runActionWithBackup(async () => {
-      for (const file of files) {
-        const configFilePath = resolve(fromPath, file);
-        const newConfigFilePath = resolve(toPath, file);
-
-        await copy(configFilePath, newConfigFilePath, {
-          overrideExisting,
-        });
-      }
-    }, files);
+        await copy(configFilePath, newConfigFilePath, { overrideExisting });
+      },
+      { ...args, envName: fromEnvName },
+    );
 
     logger.info('Environment cloned');
   },

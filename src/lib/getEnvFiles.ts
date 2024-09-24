@@ -7,7 +7,7 @@ import { getConfigDirectoryWithEnv, getConfigFilePath } from './commonUtils';
 import { getFiles } from './fsUtils';
 import { logger } from './logger';
 
-type TEnvFileObject = {
+export type TEnvFileObject = {
   projectPath: string;
   configDirPath: string;
 };

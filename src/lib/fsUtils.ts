@@ -98,7 +98,8 @@ export const fileExists = async (path: string): Promise<boolean> =>
  * @param options.skip - Whether to skip the backup and only run the action
  */
 export const runActionWithBackup = async (
-  action: () => Promise<void>,
+  // biome-ignore lint/suspicious/noConfusingVoidType: Promise<void[]> is the return type of Promise.all
+  action: () => Promise<void | void[]>,
   filePathOrPathsToBackup: string | string[],
   { skip }: { skip?: boolean } = {},
 ): Promise<void> => {
