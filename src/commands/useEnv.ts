@@ -1,6 +1,6 @@
 import { createCommandModule } from '../lib/createCommandModule';
-import { createSymlink, runActionWithBackup } from '../lib/fsUtils';
-import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
+import { forEachEnvFile } from '../lib/forAllEnvFiles';
+import { createSymlink } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
@@ -21,27 +21,15 @@ const useEnvCommandModule = createCommandModule({
       .check((argv) =>
         checkEnv(argv['env-name'], argv['config-root'], argv['project-root']),
       ),
-  handler: async ({ envName, configRoot, projectRoot, envFileName }) => {
-    const envFiles = await getEnvFilesFromConfigDir({
-      envName,
-      configRoot,
-      projectRoot,
-      envFileName,
-    });
+  handler: async (args) => {
+    logger.info(`Using ${args.envName} env`);
 
-    logger.info(`Using ${envName} env`);
-
-    await runActionWithBackup(
-      async () => {
-        await Promise.all(
-          envFiles.map(({ configDirPath, projectPath }) =>
-            createSymlink(configDirPath, projectPath, {
-              overrideExisting: true,
-            }),
-          ),
-        );
-      },
-      envFiles.map(({ projectPath }) => projectPath),
+    await forEachEnvFile(
+      ({ configDirPath, projectPath }) =>
+        createSymlink(configDirPath, projectPath, {
+          overrideExisting: true,
+        }),
+      args,
     );
   },
 });

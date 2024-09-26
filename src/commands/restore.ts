@@ -1,6 +1,6 @@
 import { createCommandModule } from '../lib/createCommandModule';
-import { copy, runActionWithBackup } from '../lib/fsUtils';
-import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
+import { forEachEnvFile } from '../lib/forAllEnvFiles';
+import { copy } from '../lib/fsUtils';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 
@@ -16,30 +16,13 @@ const restoreCommandModule = createCommandModule({
         default: 'default',
       })
       .middleware(validateMetadataFile),
-  handler: async ({ configRoot, projectRoot, envName, envFileName }) => {
-    logger.info(`Restoring config files for environment ${envName}`);
+  handler: async (args) => {
+    logger.info(`Restoring config files for environment ${args.envName}`);
 
-    const envFiles = await getEnvFilesFromConfigDir({
-      configRoot,
-      projectRoot,
-      envName,
-      envFileName,
-    });
-
-    await runActionWithBackup(
-      async () => {
-        await Promise.all(
-          envFiles.map(async ({ configDirPath, projectPath }) => {
-            await copy(configDirPath, projectPath, {
-              overrideExisting: true,
-            });
-          }),
-        );
-      },
-      envFiles.flatMap(({ projectPath, configDirPath }) => [
-        projectPath,
-        configDirPath,
-      ]),
+    await forEachEnvFile(
+      ({ configDirPath, projectPath }) =>
+        copy(configDirPath, projectPath, { overrideExisting: true }),
+      args,
     );
   },
 });
