@@ -1,12 +1,13 @@
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy } from '../lib/fsUtils';
-import { createCommandModule } from '../lib/interactiveCommandModule';
+import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 
-const restoreCommandModule = createCommandModule({
+const restoreCommandModule = createInteractiveCommandModule({
   command: 'restore [env-name]',
   describe: 'Restore env variables from a directory',
+  interactiveFields: ['env-name'],
   builder: (yargs) =>
     yargs
       .positional('env-name', {

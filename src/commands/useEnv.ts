@@ -1,14 +1,15 @@
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { createSymlink } from '../lib/fsUtils';
-import { createCommandModule } from '../lib/interactiveCommandModule';
+import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
 
-const useEnvCommandModule = createCommandModule({
+const useEnvCommandModule = createInteractiveCommandModule({
   command: 'use-env <env-name>',
-  aliases: ['env <envName>', 'use <envName>'],
+  aliases: ['env [envName]', 'use [envName]'],
   describe: 'Use an environment',
+  interactiveFields: ['env-name'],
   builder: (yargs) =>
     yargs
       .positional('env-name', {
