@@ -1,9 +1,9 @@
 import path from 'node:path';
 
 import { getConfigFilePath } from '../lib/commonUtils';
-import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
+import { createCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
