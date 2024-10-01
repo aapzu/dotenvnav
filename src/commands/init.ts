@@ -1,7 +1,7 @@
 import path from 'node:path';
 import enquirer from 'enquirer';
-
 import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
+import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import {
   createDirectoryIfNotExists,
   move,
@@ -99,29 +99,25 @@ const initCommandModule = createInteractiveCommandModule({
 
     logger.info(`Moving ${envFiles.length} config files to the config dir`);
 
-    await runActionWithBackup(
-      async () => {
-        await Promise.all(
-          envFiles.map(async ({ projectPath, configDirPath }) => {
-            const relativeProjectFilePath = path.join(
-              path.basename(projectRoot),
-              path.relative(projectRoot, projectPath),
-            );
-
-            if (await symlinkExists(projectPath)) {
-              logger.info(
-                `${relativeProjectFilePath} is already symlinked, skipping`,
-              );
-              return;
-            }
-
-            await move(projectPath, configDirPath, {
-              overrideExisting,
-            });
-          }),
+    await forEachEnvFile(
+      async ({ projectPath, configDirPath }) => {
+        const relativeProjectFilePath = path.join(
+          path.basename(projectRoot),
+          path.relative(projectRoot, projectPath),
         );
+
+        if (await symlinkExists(projectPath)) {
+          logger.info(
+            `${relativeProjectFilePath} is already symlinked, skipping`,
+          );
+          return;
+        }
+
+        await move(projectPath, configDirPath, {
+          overrideExisting,
+        });
       },
-      envFiles.map(({ projectPath }) => projectPath),
+      { getEnvFilesFromProject: true, ...args },
     );
 
     await useEnvModule.handler(args);
