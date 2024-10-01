@@ -1,6 +1,6 @@
-import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy } from '../lib/fsUtils';
+import { createCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 

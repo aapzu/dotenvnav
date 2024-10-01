@@ -1,7 +1,7 @@
 import path from 'node:path';
+import enquirer from 'enquirer';
 
 import { getConfigDirectoryWithEnv } from '../lib/commonUtils';
-import { createCommandModule } from '../lib/createCommandModule';
 import {
   createDirectoryIfNotExists,
   move,
@@ -9,18 +9,18 @@ import {
   symlinkExists,
 } from '../lib/fsUtils';
 import { getEnvFilesFromProjectDir } from '../lib/getEnvFiles';
+import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
-import { askOnce } from '../lib/prompt';
 
 import { getEvenColumns } from '../lib/loggerUtils';
 import useEnvModule from './useEnv';
 
-const initCommandModule = createCommandModule({
+const initCommandModule = createInteractiveCommandModule({
   command: 'init [env-name]',
   aliases: ['i'],
   describe: 'Initialize env variable links into a new directory',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .option('override-existing', {
         alias: 'o',
@@ -28,7 +28,7 @@ const initCommandModule = createCommandModule({
         description: 'Override existing symlinks',
         default: false,
       })
-      .option('always-yes', {
+      .option('yes', {
         alias: 'y',
         type: 'boolean',
         description: 'Always answer yes to prompts',
@@ -38,17 +38,21 @@ const initCommandModule = createCommandModule({
         alias: 'e',
         type: 'string',
         description: 'Name of the environment',
+        demandOption: true,
         default: 'default',
+        defaultDescription: 'default foobar',
+        coerce: (value) => value.replace(/\s/g, '-'),
+        implies: 'config-root',
+        normalize: true,
       })
-      .middleware((args) =>
+      .middleware((args) => {
         validateMetadataFile({
           ...args,
           allowNotExists: true,
-        }),
-      ),
+        });
+      }),
   handler: async (args) => {
-    const { configRoot, overrideExisting, envName, projectRoot, alwaysYes } =
-      args;
+    const { configRoot, overrideExisting, envName, projectRoot, yes } = args;
 
     logger.info(
       `Initializing config directory in ${path.join(configRoot, envName)}`,
@@ -82,13 +86,16 @@ const initCommandModule = createCommandModule({
   )}`,
     );
 
-    logger.info('Do you want to continue? (y/n)');
-
-    const answer = alwaysYes || (await askOnce()).toLowerCase() === 'y';
-
-    if (!answer) {
-      logger.info('Aborting');
-      return;
+    if (!yes) {
+      const result = await enquirer.prompt({
+        type: 'confirm',
+        name: 'result',
+        message: 'Do you want to continue?',
+      });
+      if (!result) {
+        logger.info('Aborting');
+        return;
+      }
     }
 
     logger.info(`Moving ${envFiles.length} config files to the config dir`);
@@ -120,6 +127,7 @@ const initCommandModule = createCommandModule({
 
     await useEnvModule.handler(args);
   },
+  interactiveFields: ['env-name'],
 });
 
 export default initCommandModule;

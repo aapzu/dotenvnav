@@ -1,5 +1,5 @@
-import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvs } from '../lib/getEnvs';
+import { createCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 

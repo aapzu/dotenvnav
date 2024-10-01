@@ -1,5 +1,5 @@
-import { createCommandModule } from '../lib/createCommandModule';
 import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
+import { createCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { getEvenColumns } from '../lib/loggerUtils';
 
