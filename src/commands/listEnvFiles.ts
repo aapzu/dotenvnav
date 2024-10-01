@@ -1,12 +1,13 @@
 import { getEnvFilesFromConfigDir } from '../lib/getEnvFiles';
-import { createCommandModule } from '../lib/interactiveCommandModule';
+import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { getEvenColumns } from '../lib/loggerUtils';
 
-const listEnvFilesCommandModule = createCommandModule({
+const listEnvFilesCommandModule = createInteractiveCommandModule({
   command: 'list-env-files [env-name]',
-  aliases: ['list-envs'],
+  aliases: ['list-envs', 'envs'],
   describe: 'List all dotenv files under the project root',
+  interactiveFields: ['env-name'],
   builder: (yargs) =>
     yargs.positional('env-name', {
       type: 'string',

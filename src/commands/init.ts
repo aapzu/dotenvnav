@@ -86,16 +86,15 @@ const initCommandModule = createInteractiveCommandModule({
   )}`,
     );
 
-    if (!yes) {
-      const result = await enquirer.prompt({
-        type: 'confirm',
-        name: 'result',
-        message: 'Do you want to continue?',
-      });
-      if (!result) {
-        logger.info('Aborting');
-        return;
-      }
+    const result = await enquirer.prompt<{ confirm: boolean }>({
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Do you want to continue?',
+      skip: yes,
+    });
+    if (Object.keys(result).length > 0 && !result.confirm) {
+      logger.info('Aborting');
+      return;
     }
 
     logger.info(`Moving ${envFiles.length} config files to the config dir`);

@@ -3,15 +3,16 @@ import path from 'node:path';
 import { getConfigFilePath } from '../lib/commonUtils';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
-import { createCommandModule } from '../lib/interactiveCommandModule';
+import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { checkEnv } from '../lib/validators';
 
-const cloneEnvCommandModule = createCommandModule({
-  command: 'clone-env <fromEnvName> <toEnvName>',
+const cloneEnvCommandModule = createInteractiveCommandModule({
+  command: 'clone-env [fromEnvName] [toEnvName]',
   aliases: ['clone'],
   describe: 'Clone an environment',
+  interactiveFields: ['from-env-name', 'to-env-name'],
   builder: (yargs) =>
     yargs
       .positional('from-env-name', {
