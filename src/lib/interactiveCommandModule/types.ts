@@ -91,11 +91,11 @@ declare module 'yargs' {
         | MiddlewareFunctionWithYargsInstance<T, U>
         | ReadonlyArray<MiddlewareFunctionWithYargsInstance<T, U>>,
       applyBeforeValidation?: boolean,
-    ): Argv<T>;
+    ): import('yargs').Argv<T>;
   }
 }
 
-export type TInteractiveCommandModuleOptions<T, U> = {
+export type TInteractiveCommandModuleOptions<_T, U> = {
   interactiveFields: Array<OptionsKey<U> & string>;
 };
 

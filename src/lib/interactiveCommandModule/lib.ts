@@ -2,12 +2,7 @@ import enquirer from 'enquirer';
 import type { Options } from 'yargs';
 import { mapObject, withoutKeys } from '../fpUtils';
 import type { UnionToTuple } from '../typeUtils';
-import type {
-  FactoryOptions,
-  OptionsKey,
-  PromptOptions,
-  TPromptType,
-} from './types';
+import type { FactoryOptions, PromptOptions, TPromptType } from './types';
 
 const ALL_TYPES_OBJECT: Record<TPromptType, boolean> = {
   array: true,
