@@ -27,6 +27,9 @@ const interactiveCommandBuilder = <T, const U>(
         const valuesByField: Record<string, unknown> = {};
 
         for (const field of interactiveFields) {
+          if (args[field] !== undefined) {
+            continue;
+          }
           const options = getOptions(field, allOptions);
           try {
             const value = await getValueWithEnquirer<U[typeof field]>(
@@ -52,10 +55,7 @@ const interactiveCommandBuilder = <T, const U>(
           }
         }
 
-        return {
-          ...args,
-          ...valuesByField,
-        };
+        return { ...args, ...valuesByField };
       }, true),
     );
 };

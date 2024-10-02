@@ -5,7 +5,6 @@ import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import {
   createDirectoryIfNotExists,
   move,
-  runActionWithBackup,
   symlinkExists,
 } from '../lib/fsUtils';
 import { getEnvFilesFromProjectDir } from '../lib/getEnvFiles';
@@ -71,20 +70,20 @@ const initCommandModule = createInteractiveCommandModule({
 
     logger.info(`Looking for env files in ${projectRoot}`);
 
-    logger.info(
-      `These symbolic links will be created:
-  ${getEvenColumns(
-    envFiles.map((f) => {
-      const fromPath = path.join(
-        path.basename(projectRoot),
-        path.relative(projectRoot, f.projectPath),
-      );
-      const toPath = f.configDirPath;
-      return [fromPath, '->', toPath];
-    }),
-    2,
-  )}`,
+    const columns = getEvenColumns(
+      envFiles.map((f) => {
+        const fromPath = path.join(
+          path.basename(projectRoot),
+          path.relative(projectRoot, f.projectPath),
+        );
+        const toPath = f.configDirPath;
+        return [fromPath, '->', toPath];
+      }),
+      2,
+      2,
     );
+
+    logger.info(`These symbolic links will be created: \n${columns}`);
 
     const result = await enquirer.prompt<{ confirm: boolean }>({
       type: 'confirm',
