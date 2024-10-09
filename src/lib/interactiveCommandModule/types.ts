@@ -1,16 +1,17 @@
 import type enquirer from 'enquirer';
+import type { _ } from 'vitest/dist/reporters-1evA5lom.js';
 import type {
   ArgumentsCamelCase,
+  CommandModule,
   Options,
   ParserConfigurationOptions,
 } from 'yargs';
+import type { TCommonOptions } from '../../cli';
 
 type CoerceCallback = (arg: unknown) => unknown;
-type ConfigCallback = (configPath: string) =>
-  | {
-      [key: string]: unknown;
-    }
-  | Error;
+type ConfigCallback = (
+  configPath: string,
+) => { [key: string]: unknown } | Error;
 
 export type OptionsKey<U> = keyof U & string;
 
@@ -65,7 +66,7 @@ export interface FactoryOptions {
 
 export type TPromptType = Exclude<Options['type'], undefined>;
 
-type YargsInstance<T, U> = import('yargs').Argv<T> & {
+export type TYargsInstance<T, U> = import('yargs').Argv<T> & {
   getOptions: () => FactoryOptions;
   getInternalMethods: () => {
     getCommandInstance: () => {
@@ -75,9 +76,15 @@ type YargsInstance<T, U> = import('yargs').Argv<T> & {
     };
   };
 };
-type MiddlewareFunctionWithYargsInstance<T, U> = (
+declare module 'yargs-parser' {
+  interface DetailedArguments {
+    defaulted: Record<string, true>;
+  }
+}
+
+export type TMiddlewareFunction<T> = (
   args: ArgumentsCamelCase<T>,
-  yargsInstance: YargsInstance<T, U>,
+  yargsInstance: TYargsInstance<T, unknown>,
 ) =>
   | void
   | Promise<void>
@@ -86,17 +93,51 @@ type MiddlewareFunctionWithYargsInstance<T, U> = (
 
 declare module 'yargs' {
   interface Argv<T> {
-    middleware<U>(
-      callbacks:
-        | MiddlewareFunctionWithYargsInstance<T, U>
-        | ReadonlyArray<MiddlewareFunctionWithYargsInstance<T, U>>,
+    middleware(
+      middleware: TMiddlewareFunction<T> | TMiddlewareFunction<T>[],
       applyBeforeValidation?: boolean,
-    ): import('yargs').Argv<T>;
+    ): Argv<T>;
   }
 }
 
-export type TInteractiveCommandModuleOptions<_T, U> = {
-  interactiveFields: Array<OptionsKey<U> & string>;
+export type TInteractiveCommandOptions<T, I extends string> = T & {
+  /**
+   * Run the command in interactive mode.
+   */
+  [K in I]: boolean;
+};
+
+export type TInteractivityOptions<_T, U, I extends string> = {
+  /** @default 'demanded' */
+  defaultInteractivity?: 'all' | 'demanded';
+  extraInteractiveFields?: Array<OptionsKey<U>>;
+  /** @default 'interactive' */
+  interactiveOptionName?: I;
+  /** @default 'i' */
+  interactiveOptionAlias?: string;
+};
+
+export type CommandBuilderFunction<T, U> = Exclude<
+  Required<CommandModule<T, U>>['builder'],
+  Record<string, unknown>
+>;
+
+export type TInteractiveCommandModuleBuilderFunction<
+  T extends TCommonOptions,
+  U,
+  I extends string,
+> = Required<TInteractiveCommandModule<T, U, I>>['builder'];
+
+export type TInteractiveCommandModule<
+  T extends TCommonOptions,
+  U,
+  I extends string,
+> = Omit<
+  CommandModule<TInteractiveCommandOptions<T, I>, U>,
+  'command' | 'builder'
+> & {
+  command: string;
+  builder: CommandBuilderFunction<TInteractiveCommandOptions<T, I>, U>;
 };
 
 export type PromptOptions = Exclude<

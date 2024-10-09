@@ -13,6 +13,7 @@ const defaultOptions: Omit<
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   envFileName: ['.env', '.env2'],
+  interactive: false,
   overrideExisting: false,
   verbose: false,
   dryRun: false,

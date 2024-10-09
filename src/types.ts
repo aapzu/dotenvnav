@@ -12,3 +12,6 @@ export type Prettify<T> = T extends object ? { [K in keyof T]: T[K] } & {} : T;
 export type YargsModuleArgs<T> = T extends CommandModule<infer U, infer V>
   ? Prettify<TKebabCaseKeysToCamelCase<U & V>>
   : never;
+
+export type SomeRequired<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>;

@@ -7,7 +7,6 @@ import listEnvFilesCommandModule from './commands/listEnvFiles';
 import listEnvsCommandModule from './commands/listEnvs';
 import restoreCommandModule from './commands/restore';
 import useEnvCommandModule from './commands/useEnv';
-import { logger } from './lib/logger';
 import { normalizePath } from './lib/normalizers';
 import type { TKebabCaseKeysToCamelCase } from './types';
 
@@ -62,13 +61,16 @@ const commonYargs = yargs(process.argv.slice(2))
     if (argv['dry-run']) {
       process.env.DRY_RUN = 'true';
     }
-  })
-  .fail((_msg, err) => {
-    if (err) {
-      logger.error(err.message);
-    }
-    process.exit(1);
-  });
+  }, true);
+// .fail((msg, err) => {
+//   if (msg) {
+//     logger.error(msg);
+//   }
+//   if (err) {
+//     logger.error(err.message);
+//   }
+//   process.exit(1);
+// });
 
 export const parser = commonYargs
   .command(initCommandModule)

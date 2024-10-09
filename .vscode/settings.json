@@ -1,8 +1,5 @@
 {
   "editor.defaultFormatter": "biomejs.biome",
-  "files.exclude": {
-    "node_modules": true
-  },
   "editor.codeActionsOnSave": {
     "source.organizeImports.biome": "explicit"
   },

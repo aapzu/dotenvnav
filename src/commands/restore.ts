@@ -4,28 +4,30 @@ import { createInteractiveCommandModule } from '../lib/interactiveCommandModule'
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 
-const restoreCommandModule = createInteractiveCommandModule({
-  command: 'restore [env-name]',
-  describe: 'Restore env variables from a directory',
-  interactiveFields: ['env-name'],
-  builder: (yargs) =>
-    yargs
-      .positional('env-name', {
+const restoreCommandModule = createInteractiveCommandModule(
+  {
+    command: 'restore [env-name]',
+    describe: 'Restore env variables from a directory',
+    builder: (yargs) =>
+      yargs.middleware(validateMetadataFile).positional('env-name', {
         alias: 'e',
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
-      })
-      .middleware(validateMetadataFile),
-  handler: async (args) => {
-    logger.info(`Restoring config files for environment ${args.envName}`);
+      }),
+    handler: async (args) => {
+      logger.info(`Restoring config files for environment ${args.envName}`);
 
-    await forEachEnvFile(
-      ({ configDirPath, projectPath }) =>
-        copy(configDirPath, projectPath, { overrideExisting: true }),
-      args,
-    );
+      await forEachEnvFile(
+        ({ configDirPath, projectPath }) =>
+          copy(configDirPath, projectPath, { overrideExisting: true }),
+        args,
+      );
+    },
   },
-});
+  {
+    extraInteractiveFields: ['env-name'],
+  },
+);
 
 export default restoreCommandModule;

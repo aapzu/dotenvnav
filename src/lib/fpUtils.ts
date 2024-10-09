@@ -31,3 +31,19 @@ export const withoutKeys = <T, K extends Array<keyof T>>(
     T,
     K[number]
   >;
+
+export const pick = <T, K extends Array<keyof T>>(
+  obj: T,
+  keys: K,
+): Pick<T, K[number]> =>
+  filterObject(obj, (key) => keys.includes(key as K[number])) as Pick<
+    T,
+    K[number]
+  >;
+
+export const toEntries = <O extends object>(obj: O) =>
+  Object.entries(obj) as Array<{ [key in keyof O]: [key, O[key]] }[keyof O]>;
+
+export const fromEntries = <K extends PropertyKey, V>(
+  pairs: readonly [K, V][],
+) => Object.fromEntries(pairs) as { [P in K]: V };
