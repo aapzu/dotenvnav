@@ -12,7 +12,8 @@ const defaultOptions: YargsModuleArgs<typeof initCommandModule> = {
   overrideExisting: false,
   envName: 'testEnv',
   envFileName: ['.env', '.env2'],
-  alwaysYes: true,
+  yes: true,
+  interactive: false,
   dryRun: false,
   verbose: false,
 };

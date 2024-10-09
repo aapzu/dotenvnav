@@ -1,18 +1,18 @@
 import path from 'node:path';
 
+import type { commonYargs } from '../cli';
 import { getConfigFilePath } from '../lib/commonUtils';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
-import { createInteractiveCommandModule } from '../lib/interactiveCommandModule';
+import { interactiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
-import { checkEnv } from '../lib/validators';
+import { createEnvChecker } from '../lib/validators';
 
-const cloneEnvCommandModule = createInteractiveCommandModule({
-  command: 'clone-env [fromEnvName] [toEnvName]',
+const cloneEnvCommandModule = interactiveCommandModule<typeof commonYargs>()({
+  command: 'clone-env <from-env-name> <to-env-name>',
   aliases: ['clone'],
   describe: 'Clone an environment',
-  interactiveFields: ['from-env-name', 'to-env-name'],
   builder: (yargs) =>
     yargs
       .positional('from-env-name', {
@@ -32,13 +32,7 @@ const cloneEnvCommandModule = createInteractiveCommandModule({
         default: false,
       })
       .middleware(validateMetadataFile)
-      .check((argv) =>
-        checkEnv(
-          argv['from-env-name'],
-          argv['config-root'],
-          argv['project-root'],
-        ),
-      ),
+      .check(createEnvChecker('from-env-name')),
   handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
     await forEachEnvFile(
       async ({ configDirPath }) => {

@@ -13,6 +13,7 @@ const defaultOptions: YargsModuleArgs<typeof listEnvsCommandModule> = {
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   envFileName: ['.env'],
+  interactive: false,
   verbose: false,
   dryRun: false,
 };

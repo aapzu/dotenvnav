@@ -1,8 +1,14 @@
+import { kebabCase } from 'change-case';
 import enquirer from 'enquirer';
 import type { Options } from 'yargs';
-import { mapObject, withoutKeys } from '../fpUtils';
 import type { UnionToTuple } from '../typeUtils';
-import type { FactoryOptions, PromptOptions, TPromptType } from './types';
+import type {
+  FactoryOptions,
+  OptionsKey,
+  PromptOptionsObject,
+  TPromptType,
+  TYargsInstance,
+} from './types';
 
 const ALL_TYPES_OBJECT: Record<TPromptType, boolean> = {
   array: true,
@@ -16,46 +22,79 @@ const ALL_TYPES = Object.keys(ALL_TYPES_OBJECT) as UnionToTuple<TPromptType>;
 
 export const getOptions = (
   field: string,
-  allOptions: FactoryOptions,
+  allOptions: Omit<
+    FactoryOptions,
+    'envPrefix' | 'showHiddenOpt' | 'configuration' | 'configObjects'
+  >,
+  allDescriptions: Record<string, string>,
 ): Options => {
-  const filteredOptions = withoutKeys(allOptions, [
-    'configObjects',
-    'demandedCommands',
-    'configObjects',
-    'showHiddenOpt',
-    'configuration',
-  ]);
-
-  const getOptionValue = (valueFieldName: keyof typeof filteredOptions) => {
+  type GetOptionValue = <K extends keyof typeof allOptions>(
+    valueFieldName: K,
+  ) => (typeof allOptions)[K] extends string
+    ? string
+    : (typeof allOptions)[K] extends string[]
+      ? boolean
+      : (typeof allOptions)[K] extends Record<string, infer U>
+        ? U
+        : never;
+  const getOptionValue: GetOptionValue = (valueFieldName) => {
     const value = allOptions[valueFieldName];
     if (typeof value === 'string') {
       return value;
     }
     if (Array.isArray(value)) {
-      return value.includes(field);
+      return value.includes(field) as ReturnType<GetOptionValue>;
     }
-    return value?.[field];
+    const kebabCaseField = kebabCase(field);
+    if (
+      value &&
+      kebabCaseField in value &&
+      value?.[kebabCaseField] === undefined
+    ) {
+      return true as ReturnType<GetOptionValue>;
+    }
+    return value?.[field] ?? value?.[kebabCaseField];
   };
 
   const type = ALL_TYPES.find(getOptionValue) || 'boolean';
 
-  return {
-    ...mapObject(filteredOptions, (key) => {
-      return getOptionValue(key);
-    }),
-    type,
-  } as Options;
-};
+  const demandOption = getOptionValue('demandedOptions') ?? false;
 
-const expectNever = (value: never): never => value;
+  return {
+    alias: getOptionValue('alias'),
+    choices: getOptionValue('choices'),
+    coerce: getOptionValue('coerce'),
+    config: getOptionValue('config') as boolean,
+    configParser: undefined,
+    conflicts: undefined,
+    default: getOptionValue('default'),
+    defaultDescription: getOptionValue('defaultDescription'),
+    demand: demandOption,
+    deprecate: getOptionValue('deprecatedOptions'),
+    deprecated: getOptionValue('deprecatedOptions'),
+    demandOption,
+    desc: allDescriptions[field],
+    describe: allDescriptions[field],
+    description: allDescriptions[field],
+    global: undefined,
+    group: undefined,
+    hidden: undefined,
+    implies: undefined,
+    nargs: getOptionValue('narg'),
+    normalize: getOptionValue('normalize'),
+    require: demandOption,
+    required: demandOption,
+    skipValidation: getOptionValue('skipValidation'),
+    type,
+  };
+};
 
 const createPromptFactory =
   <T>(
     fieldName: string,
-    description: string,
-    { default: defaultValue, coerce }: Options,
+    { default: defaultValue, coerce, description }: Options,
   ) =>
-  async <O extends Omit<PromptOptions, 'name' | 'message' | 'initial'>>(
+  async <O extends Omit<PromptOptionsObject, 'name' | 'message' | 'initial'>>(
     options: O,
   ): Promise<T> => {
     const { value } = await enquirer.prompt<{ value: T }>({
@@ -71,15 +110,15 @@ const createPromptFactory =
     return value;
   };
 
+const expectNever = (value: never): never => value;
+
 export const getValueWithEnquirer = async <T>(
   fieldName: string,
-  description: string,
   options: Options,
 ): Promise<T> => {
-  const { type } = options;
-  const createPrompt = createPromptFactory<T>(fieldName, description, options);
+  const createPrompt = createPromptFactory<T>(fieldName, options);
 
-  switch (type) {
+  switch (options.type) {
     case undefined:
     case 'boolean':
       return createPrompt({ type: 'confirm' });
@@ -94,6 +133,23 @@ export const getValueWithEnquirer = async <T>(
         multiline: true,
       });
     default:
-      throw new Error(`Unsupported prompt type: ${expectNever(type)}`);
+      throw new Error(`Unsupported prompt type: ${expectNever(options.type)}`);
   }
 };
+
+export const getAllFieldNames = <T, U>(
+  allFieldsAndAliases: Exclude<
+    TYargsInstance<T, U>['parsed'],
+    false
+  >['aliases'],
+  camelCaseAliases: string[],
+  optionsAliases: FactoryOptions['alias'],
+) =>
+  Object.keys(allFieldsAndAliases).filter(
+    (name) =>
+      !camelCaseAliases.includes(name) &&
+      (Object.keys(optionsAliases).includes(name) ||
+        Object.values(optionsAliases).every(
+          (aliases) => !aliases.includes(name),
+        )),
+  ) as Array<OptionsKey<U>>;

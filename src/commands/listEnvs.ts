@@ -1,9 +1,10 @@
+import type { commonYargs } from '../cli';
 import { getEnvs } from '../lib/getEnvs';
-import { createCommandModule } from '../lib/interactiveCommandModule';
+import { interactiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 
-const listEnvsCommandModule = createCommandModule({
+const listEnvsCommandModule = interactiveCommandModule<typeof commonYargs>()({
   command: 'list-envs',
   aliases: ['envs'],
   describe: 'List all environments',
