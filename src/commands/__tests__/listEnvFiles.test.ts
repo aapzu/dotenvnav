@@ -16,6 +16,7 @@ const defaultOptions: YargsModuleArgs<typeof listEnvFilesCommandModule> = {
   verbose: false,
   dryRun: false,
   envName: 'default',
+  interactive: false,
 };
 
 describe('listEnvFiles command', () => {

@@ -12,6 +12,7 @@ const defaultOptions: YargsModuleArgs<typeof useEnvCommandModule> = {
   envName: 'default',
   verbose: false,
   dryRun: false,
+  interactive: false,
 };
 
 describe('useEnv command', () => {

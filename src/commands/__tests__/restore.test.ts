@@ -12,6 +12,7 @@ const defaultOptions: YargsModuleArgs<typeof restoreCommandModule> = {
   dryRun: false,
   envFileName: ['.env'],
   envName: 'default',
+  interactive: false,
 };
 
 describe('restore command', () => {

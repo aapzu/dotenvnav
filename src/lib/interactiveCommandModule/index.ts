@@ -1,75 +1,86 @@
-import { camelCase } from 'change-case';
-import type { Argv, CommandModule } from 'yargs';
+import type { Argv } from 'yargs';
+import parser from 'yargs-parser';
 
-import type { TCommonOptions } from '../../cli';
-import { asError } from '../commonUtils';
-import { logger } from '../logger';
-import { getOptions, getValueWithEnquirer } from './lib';
-import type { TInteractiveCommandModuleOptions } from './types';
+import { createAskMissingValuesMiddleware } from './askMissingValuesMiddleware';
+import { type TParsedCommand, parseCommand } from './parse-command';
+import type {
+  GetI,
+  GetT,
+  InteractiveArgv,
+  InteractiveCommandModule,
+  InteractiveCommandModuleBuilderFunction,
+  InteractiveCommandModuleOptions,
+  InteractiveCommandOptions,
+  InteractiveYargsOptions,
+} from './types';
 
-const interactiveCommandBuilder = <T, const U>(
-  builder: CommandModule<T, U>['builder'],
-  { interactiveFields = [] }: TInteractiveCommandModuleOptions<T, U>,
-): CommandModule<T, U>['builder'] => {
-  if (typeof builder !== 'function') {
-    logger.warn('Object builder is not supported');
-    return builder;
-  }
-  return async (yargs: Argv<T>) =>
+export const interactiveYargs = <T, I extends string = 'interactive'>(
+  yargsInstance: InteractiveArgv<T>,
+  {
+    interactiveOptionName = 'interactive' as I,
+    interactiveOptionAlias,
+  }: InteractiveYargsOptions<I> = {},
+): Argv<InteractiveCommandOptions<T, I>> =>
+  yargsInstance.option(interactiveOptionName, {
+    type: 'boolean',
+    alias: interactiveOptionAlias,
+    description: 'Run the command in interactive mode',
+    default: false,
+  });
+
+const interactiveCommandBuilder =
+  <T, U>(
+    builder: InteractiveCommandModuleBuilderFunction<T, U>,
+    interactivityOptions: InteractiveCommandModuleOptions<T, U>,
+    parsedCommand: TParsedCommand,
+    interactive: boolean,
+  ): InteractiveCommandModuleBuilderFunction<T, U> =>
+  async (yargs) =>
     builder(
-      yargs.middleware<U>(async (args, yargsInstance) => {
-        const allOptions = yargsInstance.getOptions();
-        const allDescriptions = yargsInstance
-          .getInternalMethods()
-          .getCommandInstance()
-          .usage.getDescriptions();
-
-        const valuesByField: Record<string, unknown> = {};
-
-        for (const field of interactiveFields) {
-          if (args[field] !== undefined) {
-            continue;
-          }
-          const options = getOptions(field, allOptions);
-          try {
-            const value = await getValueWithEnquirer<U[typeof field]>(
-              field,
-              allDescriptions[field],
-              options,
-            );
-            valuesByField[field] = value;
-            valuesByField[camelCase(field)] = value;
-            for (const alias of options.alias ?? []) {
-              valuesByField[alias] = value;
-            }
-          } catch (err) {
-            // err === '' means the user aborted the prompt
-            // I don't have an earthly idea why enquirer does it that way
-            if (err === '') {
-              logger.warn('Aborting');
-              process.exit(0);
-            }
-            const error = asError(err);
-            logger.error(error);
-            process.exit(1);
-          }
-        }
-
-        return { ...args, ...valuesByField };
-      }, true),
+      yargs.middleware(
+        createAskMissingValuesMiddleware(
+          interactivityOptions,
+          parsedCommand,
+          interactive,
+        ),
+        true,
+      ),
     );
-};
-export const createCommandModule = <U>(
-  module: CommandModule<TCommonOptions, U>,
-) => module;
 
-export const createInteractiveCommandModule = <const U>({
-  interactiveFields,
-  ...module
-}: CommandModule<TCommonOptions, U> &
-  TInteractiveCommandModuleOptions<TCommonOptions, U>) => ({
-  ...module,
-  builder: interactiveCommandBuilder<TCommonOptions, U>(module.builder, {
-    interactiveFields,
-  }),
-});
+export const interactiveCommandModule =
+  <
+    // biome-ignore lint/suspicious/noExplicitAny: this seems to only work with any
+    Y extends InteractiveArgv<any>,
+    T = GetT<Y>,
+  >() =>
+  <U>(
+    { command, builder, ...rest }: InteractiveCommandModule<T, U>,
+    interactivityOptions?: InteractiveCommandModuleOptions<T, U>,
+  ): InteractiveCommandModule<T, U> => {
+    const parsedCommand = parseCommand(command);
+
+    const interactivityOptionsWithDefaults = {
+      interactiveOptionName: 'interactive' as GetI<Y>,
+      interactiveOptionAlias: 'i',
+      ...interactivityOptions,
+    } as const;
+    const { interactive } = parser(process.argv.slice(2), {
+      boolean: [interactivityOptionsWithDefaults.interactiveOptionName],
+      alias: {
+        interactive: interactivityOptionsWithDefaults.interactiveOptionAlias,
+      },
+    });
+    const finalCommand = interactive
+      ? command.replaceAll('<', '[').replaceAll('>', ']')
+      : command;
+    return {
+      ...rest,
+      command: finalCommand,
+      builder: interactiveCommandBuilder(
+        builder,
+        interactivityOptionsWithDefaults,
+        parsedCommand,
+        interactive,
+      ),
+    };
+  };
