@@ -14,7 +14,7 @@ export const createAskMissingValuesMiddleware =
     interactivityOptions: InteractiveCommandModuleOptions<T, U>,
     parsedCommand: TParsedCommand,
     interactive: boolean,
-  ): TMiddlewareFunction<T> =>
+  ): TMiddlewareFunction<U> =>
   async (args, yargsInstance) => {
     if (!interactive) {
       return args;

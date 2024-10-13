@@ -21,7 +21,7 @@ const initCommandModule = interactiveCommandModule<typeof commonYargs>()(
     command: 'init [env-name]',
     aliases: ['i'],
     describe: 'Initialize env variable links into a new directory',
-    builder: (yargs) =>
+    builder: async (yargs) =>
       yargs
         .option('override-existing', {
           type: 'boolean',

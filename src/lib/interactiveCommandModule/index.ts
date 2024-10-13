@@ -36,15 +36,13 @@ const interactiveCommandBuilder =
     interactive: boolean,
   ): InteractiveCommandModuleBuilderFunction<T, U> =>
   async (yargs) =>
-    builder(
-      yargs.middleware(
-        createAskMissingValuesMiddleware(
-          interactivityOptions,
-          parsedCommand,
-          interactive,
-        ),
-        true,
+    (await builder(yargs)).middleware(
+      createAskMissingValuesMiddleware(
+        interactivityOptions,
+        parsedCommand,
+        interactive,
       ),
+      true,
     );
 
 export const interactiveCommandModule =

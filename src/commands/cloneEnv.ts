@@ -4,6 +4,7 @@ import type { commonYargs } from '../cli';
 import { getConfigFilePath } from '../lib/commonUtils';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
+import { getEnvs } from '../lib/getEnvs';
 import { interactiveCommandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
@@ -13,12 +14,14 @@ const cloneEnvCommandModule = interactiveCommandModule<typeof commonYargs>()({
   command: 'clone-env <from-env-name> <to-env-name>',
   aliases: ['clone'],
   describe: 'Clone an environment',
-  builder: (yargs) =>
-    yargs
+  builder: async (yargs) => {
+    const envs = await getEnvs(await yargs.argv);
+    return yargs
       .positional('from-env-name', {
         type: 'string',
         description: 'Name of the environment to clone from',
         demandOption: true,
+        choices: envs,
       })
       .positional('to-env-name', {
         type: 'string',
@@ -32,7 +35,8 @@ const cloneEnvCommandModule = interactiveCommandModule<typeof commonYargs>()({
         default: false,
       })
       .middleware(validateMetadataFile)
-      .check(createEnvChecker('from-env-name')),
+      .check(createEnvChecker('from-env-name'));
+  },
   handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
     await forEachEnvFile(
       async ({ configDirPath }) => {
