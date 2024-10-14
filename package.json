@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "tsx src/index.ts",
-    "build": "tsup $(find src -name '*.ts' -not -path '*/__tests__/*')",
+    "build": "tsup-node",
     "cli": "pnpm start",
     "test": "vitest run",
     "test:watch": "vitest dev",
