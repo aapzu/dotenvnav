@@ -1,22 +1,29 @@
 import { camelCase } from 'change-case';
+import type { ArgumentsCamelCase, MiddlewareFunction } from 'yargs';
 import { asError } from '../commonUtils';
 import { toEntries } from '../fpUtils';
 import { logger } from '../logger';
 import { getAllFieldNames, getOptions, getValueWithEnquirer } from './lib';
-import type { TParsedCommand } from './parse-command';
-import type {
-  InteractiveCommandModuleOptions,
-  TMiddlewareFunction,
-} from './types';
+import type { InteractiveYargsOptions, TYargsInstance } from './types';
 
-export const createAskMissingValuesMiddleware =
-  <T, U>(
-    interactivityOptions: InteractiveCommandModuleOptions<T, U>,
-    parsedCommand: TParsedCommand,
-    interactive: boolean,
-  ): TMiddlewareFunction<U> =>
-  async (args, yargsInstance) => {
-    if (!interactive) {
+export const createInteractiveYargsMiddleware = <T, I extends string>(
+  givenOptions: Partial<InteractiveYargsOptions<I>>,
+): MiddlewareFunction<T> =>
+  (async (args: ArgumentsCamelCase<T>, yargsInstance: TYargsInstance<T, T>) => {
+    const interactiveYargsOptions: InteractiveYargsOptions<I> = {
+      ...givenOptions,
+      interactiveOptionAlias: 'i',
+      interactiveOptionName: 'interactive' as I,
+      defaultInteractivity: 'demanded',
+    };
+    yargsInstance.interactiveYargsOptions = interactiveYargsOptions;
+
+    const { interactiveOptionName, defaultInteractivity } =
+      interactiveYargsOptions;
+
+    const isInteractive = args[interactiveOptionName];
+
+    if (!isInteractive) {
       return args;
     }
 
@@ -36,25 +43,20 @@ export const createAskMissingValuesMiddleware =
 
     const valuesByField: Record<string, unknown> = {};
 
-    const { defaultInteractivity = 'demanded', extraInteractiveFields = [] } =
-      interactivityOptions;
-
     const parsed = yargsInstance.parsed || {
       aliases: {},
       newAliases: {},
       defaulted: undefined,
     };
 
-    const allFields = getAllFieldNames<T, U>(
+    const allFields = getAllFieldNames(
       parsed.aliases,
       Object.keys(parsed.newAliases),
       allOptions.alias,
     );
 
-    const positionalsToPrompt = parsedCommand.demanded.map((d) => d.cmd[0]);
-
     const optionsToPrompt = allFields.filter((field) => {
-      if (field === 'interactive') {
+      if (field === interactiveOptionName) {
         return false;
       }
       const fieldHasValue =
@@ -63,22 +65,14 @@ export const createAskMissingValuesMiddleware =
         return false;
       }
       const options = getOptions(field, allOptions, allDescriptions);
-      return (
-        defaultInteractivity === 'all' ||
-        options.demandOption ||
-        extraInteractiveFields.includes(field)
-      );
+      return defaultInteractivity === 'all' || options.demandOption;
     });
 
-    const fieldsToPrompt = [
-      ...new Set([...positionalsToPrompt, ...optionsToPrompt]),
-    ];
-
-    for (const field of fieldsToPrompt) {
+    for (const field of optionsToPrompt) {
       const options = getOptions(field, allOptions, allDescriptions);
       try {
         const value = await getValueWithEnquirer<
-          typeof field extends keyof U ? U[typeof field] : unknown
+          typeof field extends keyof T ? T[typeof field] : unknown
         >(field, options);
         const allFieldNames = [
           ...new Set([field, camelCase(field), ...(options.alias || [])]),
@@ -100,4 +94,4 @@ export const createAskMissingValuesMiddleware =
     }
 
     return { ...args, ...valuesByField };
-  };
+  }) as unknown as MiddlewareFunction<T>;

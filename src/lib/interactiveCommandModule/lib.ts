@@ -124,17 +124,26 @@ export const getValueWithEnquirer = async <T>(
       return createPrompt({ type: 'confirm' });
     case 'string':
       return options.choices?.length
-        ? createPrompt({ type: 'select', choices: [...options.choices] })
+        ? createPrompt({
+            type: 'select',
+            choices: [...new Set([...options.choices])],
+          })
         : createPrompt({ type: 'input' });
     case 'number':
       return options.choices?.length
-        ? createPrompt({ type: 'select', choices: [...options.choices] })
+        ? createPrompt({
+            type: 'select',
+            choices: [...new Set([...options.choices])],
+          })
         : createPrompt({ type: 'numeral' });
     case 'count':
       return createPrompt({ type: 'numeral' });
     case 'array':
       return options.choices?.length
-        ? createPrompt({ type: 'multiselect', choices: [...options.choices] })
+        ? createPrompt({
+            type: 'multiselect',
+            choices: [...new Set([...options.choices])],
+          })
         : createPrompt({ type: 'list', multiline: true });
     default:
       throw new Error(`Unsupported prompt type: ${expectNever(options.type)}`);

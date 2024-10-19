@@ -1,4 +1,4 @@
-import type { CommandModule } from 'yargs';
+import type { Argv, CommandModule } from 'yargs';
 import type { Prettify } from './lib/typeUtils';
 
 type TKebabCaseToCamelCase<S extends string> = S extends `${infer F}-${infer R}`
@@ -15,3 +15,6 @@ export type YargsModuleArgs<T> = T extends CommandModule<infer U, infer V>
 
 export type SomeRequired<T, K extends keyof T> = Omit<T, K> &
   Required<Pick<T, K>>;
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+export type GetT<Y extends Argv<any>> = Y extends Argv<infer T> ? T : never;

@@ -5,25 +5,27 @@ import { getConfigFilePath } from '../lib/commonUtils';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
 import { getEnvs } from '../lib/getEnvs';
-import { interactiveCommandModule } from '../lib/interactiveCommandModule';
+import { commandModule } from '../lib/interactiveCommandModule';
 import { logger } from '../lib/logger';
 import { validateMetadataFile } from '../lib/metadataFile';
 import { createEnvChecker } from '../lib/validators';
 
-const cloneEnvCommandModule = interactiveCommandModule<typeof commonYargs>()({
-  command: 'clone-env <from-env-name> <to-env-name>',
+const cloneEnvCommandModule = commandModule<typeof commonYargs>()({
+  command: 'clone-env',
   aliases: ['clone'],
   describe: 'Clone an environment',
   builder: async (yargs) => {
     const envs = await getEnvs(await yargs.argv);
     return yargs
-      .positional('from-env-name', {
+      .option('from-env-name', {
+        alias: 'f',
         type: 'string',
         description: 'Name of the environment to clone from',
         demandOption: true,
         choices: envs,
       })
-      .positional('to-env-name', {
+      .option('to-env-name', {
+        alias: 't',
         type: 'string',
         description: 'Name of the environment to clone to',
         demandOption: true,

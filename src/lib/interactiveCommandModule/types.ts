@@ -3,21 +3,17 @@ import type { _ } from 'vitest/dist/reporters-1evA5lom.js';
 import type {
   ArgumentsCamelCase,
   Argv,
-  CommandModule,
   Options,
   ParserConfigurationOptions,
 } from 'yargs';
+import type { SomeRequired } from '../../types';
 
 export type InteractiveYargsOptions<I extends string> = {
-  interactiveOptionName?: I;
+  interactiveOptionName: I;
   /** @default 'i' */
-  interactiveOptionAlias?: string;
-};
-
-export type InteractiveCommandModuleOptions<_T, U> = {
+  interactiveOptionAlias: string;
   /** @default 'demanded' */
-  defaultInteractivity?: 'all' | 'demanded';
-  extraInteractiveFields?: Array<OptionsKey<U>>;
+  defaultInteractivity: 'all' | 'demanded';
 };
 
 type CoerceCallback = (arg: unknown) => unknown;
@@ -28,9 +24,6 @@ type ConfigCallback = (
 export type OptionsKey<U> = keyof U & string;
 
 type Dictionary<T> = Record<string, T>;
-
-// Copied and modified from
-// https://github.com/yargs/yargs/blob/0c95f9c/lib/typings/yargs-parser-types.ts#L88-L128
 
 export type ArrayOptionValue<U> = OptionsKey<U>[];
 export type ObjectOptionValue<U, T> = Partial<Record<OptionsKey<U>, T>>;
@@ -87,6 +80,11 @@ export type TYargsInstance<T, U> = import('yargs').Argv<T> & {
       };
     };
   };
+  // own field
+  interactiveYargsOptions: SomeRequired<
+    InteractiveYargsOptions<string>,
+    'interactiveOptionName' | 'defaultInteractivity'
+  >;
 };
 declare module 'yargs-parser' {
   interface DetailedArguments {
@@ -103,28 +101,6 @@ export type TMiddlewareFunction<T> = (
   | ArgumentsCamelCase<T>
   | Promise<ArgumentsCamelCase<T>>;
 
-declare module 'yargs' {
-  interface Argv<T> {
-    middleware(
-      middleware: TMiddlewareFunction<T> | TMiddlewareFunction<T>[],
-      applyBeforeValidation?: boolean,
-    ): Argv<T>;
-  }
-}
-
-export interface InteractiveArgv<T>
-  extends Omit<Argv<T>, 'command' | 'middleware'> {
-  command<U>(module: InteractiveCommandModule<T, U>): InteractiveArgv<T>;
-  command<U>(
-    modules: Array<InteractiveCommandModule<T, U>>,
-  ): InteractiveArgv<T>;
-
-  middleware(
-    middleware: TMiddlewareFunction<T> | TMiddlewareFunction<T>[],
-    applyBeforeValidation?: boolean,
-  ): InteractiveArgv<T>;
-}
-
 export type InteractiveCommandOptions<T, I extends string> = T & {
   /**
    * Run the command in interactive mode.
@@ -136,27 +112,9 @@ export type InteractiveCommandModuleBuilderFunction<T, U> =
   | ((args: Argv<T>) => Argv<U>)
   | ((args: Argv<T>) => PromiseLike<Argv<U>>);
 
-export type InteractiveCommandModule<T, U> = Omit<
-  CommandModule<T, U>,
-  'command' | 'builder'
-> & {
-  command: string;
-  builder: InteractiveCommandModuleBuilderFunction<T, U>;
-};
-
 export type PromptOptions = Parameters<typeof enquirer.prompt>[0];
 
 export type PromptOptionsObject = Exclude<
   PromptOptions,
   ((...args: unknown[]) => unknown) | Array<unknown>
 >;
-
-// biome-ignore lint/suspicious/noExplicitAny: any needed for type inference
-type AnyInteractiveCommandOptions = InteractiveCommandOptions<any, any>;
-export type GetT<Y extends InteractiveArgv<AnyInteractiveCommandOptions>> =
-  Y extends InteractiveArgv<infer T> ? T : never;
-
-export type GetI<Y extends InteractiveArgv<AnyInteractiveCommandOptions>> =
-  Y extends InteractiveArgv<InteractiveCommandOptions<infer _T, infer I>>
-    ? I
-    : never;
