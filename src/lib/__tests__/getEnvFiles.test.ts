@@ -2,6 +2,7 @@ import { afterEach } from 'node:test';
 
 import mock, { symlink } from 'mock-fs';
 
+import { createMockMetadataFile } from '../../testUtils';
 import {
   getEnvFilesFromConfigDir,
   getEnvFilesFromProjectDir,
@@ -30,9 +31,13 @@ describe('getEnvFiles', () => {
             },
           },
         },
+        ...createMockMetadataFile({
+          metadataFilePath: '/temp/.dotenvnav.json',
+          projectRoot: '/temp/testProject',
+        }),
       });
       const envFiles = await getEnvFilesFromProjectDir({
-        configRoot: '/temp/.dotenvnav',
+        metadataFilePath: '/temp/.dotenvnav.json',
         projectRoot: '/temp/testProject',
         envName: 'default',
         envFileName: ['.env', '.env2'],
@@ -82,9 +87,13 @@ describe('getEnvFiles', () => {
             },
           },
         },
+        ...createMockMetadataFile({
+          metadataFilePath: '/temp/.dotenvnav.json',
+          projectRoot: '/temp/testProject',
+        }),
       });
       const envFiles = await getEnvFilesFromProjectDir({
-        configRoot: '/temp/.dotenvnav',
+        metadataFilePath: '/temp/.dotenvnav.json',
         projectRoot: '/temp/testProject',
         envName: 'default',
         envFileName: ['.env'],
@@ -130,9 +139,13 @@ describe('getEnvFiles', () => {
             another: { '.env': '' },
           },
         },
+        ...createMockMetadataFile({
+          metadataFilePath: '/temp/.dotenvnav.json',
+          projectRoot: '/temp/testProject',
+        }),
       });
       const envFiles = await getEnvFilesFromConfigDir({
-        configRoot: '/temp/.dotenvnav',
+        metadataFilePath: '/temp/.dotenvnav.json',
         projectRoot: '/temp/testProject',
         envName: 'default',
         envFileName: ['.env'],

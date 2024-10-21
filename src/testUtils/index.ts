@@ -1,4 +1,5 @@
-import { type TCommonOptionsCamelCase, parser } from '../cli';
+import { dirname, join } from 'node:path';
+import { parser } from '../cli';
 import { getProjectName } from '../lib/commonUtils';
 
 export const runCommand = async (
@@ -23,13 +24,15 @@ export const runCommand = async (
 
 export const createMockMetadataFile = ({
   metadataFilePath,
-  configRoot,
   projectRoot,
+  configRoot = join(dirname(metadataFilePath), '.dotenvnav'),
   extraContent = {},
-}: Pick<
-  TCommonOptionsCamelCase,
-  'metadataFilePath' | 'configRoot' | 'projectRoot'
-> & { extraContent?: Record<string, unknown> }): Record<string, string> => ({
+}: {
+  metadataFilePath: string;
+  projectRoot: string;
+  extraContent?: Record<string, unknown>;
+  configRoot?: string;
+}): Record<string, string> => ({
   [metadataFilePath]: JSON.stringify(
     {
       configRoot,

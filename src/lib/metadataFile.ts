@@ -19,10 +19,11 @@ export const upsertMetadataFile = async ({
   configRoot,
   projectRoot,
   metadataFilePath,
-}: Pick<
-  TCommonOptionsCamelCase,
-  'configRoot' | 'projectRoot' | 'metadataFilePath'
->) => {
+}: {
+  configRoot: string;
+  projectRoot: string;
+  metadataFilePath: string;
+}) => {
   const currentMetadataFile = (await exists(metadataFilePath))
     ? await readMetadataFile({ metadataFilePath })
     : undefined;
@@ -67,8 +68,11 @@ export const readMetadataFile = async ({
 
 type TValidateMetadataFileOptions = Pick<
   TCommonOptionsCamelCase,
-  'projectRoot' | 'metadataFilePath' | 'configRoot'
-> & { allowNotExists?: boolean };
+  'projectRoot' | 'metadataFilePath'
+> & {
+  allowNotExists?: boolean;
+  configRoot?: string;
+};
 
 export const validateMetadataFile = async ({
   metadataFilePath,
@@ -90,7 +94,7 @@ export const validateMetadataFile = async ({
   const projectName = getProjectName(projectRoot);
   const initializedWithProjectRoot = metadataFileContent.projects[projectName];
 
-  if (metadataFileContent.configRoot !== configRoot) {
+  if (configRoot && metadataFileContent.configRoot !== configRoot) {
     throw new Error(
       `The metadata file ${metadataFilePath} was initialized with different config root (${metadataFileContent.configRoot}). Refusing to proceed.`,
     );

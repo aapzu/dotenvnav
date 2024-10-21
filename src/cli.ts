@@ -23,13 +23,6 @@ const commonYargs = yargs(process.argv.slice(2))
     default: process.cwd(),
     coerce: normalizePath,
   })
-  .option('config-root', {
-    alias: 'c',
-    type: 'string',
-    description: 'Path to the config root directory',
-    default: '~/.dotenvnav',
-    coerce: normalizePath,
-  })
   .option('env-file-name', {
     alias: 'f',
     type: 'string',

@@ -6,7 +6,6 @@ import type restoreCommandModule from '../restore';
 
 const defaultOptions: YargsModuleArgs<typeof restoreCommandModule> = {
   metadataFilePath: '/temp/.envnav.json',
-  configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   verbose: false,
   dryRun: false,

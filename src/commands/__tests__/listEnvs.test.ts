@@ -10,7 +10,6 @@ import type listEnvsCommandModule from '../listEnvs';
 
 const defaultOptions: YargsModuleArgs<typeof listEnvsCommandModule> = {
   metadataFilePath: '/temp/.dotenvnav.json',
-  configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   envFileName: ['.env'],
   verbose: false,
@@ -59,7 +58,7 @@ describe('listEnvs command', () => {
     await runCommand('list-envs', defaultOptions);
     const { info } = getLogs();
     expect(info).toEqual(`
-${chalk.whiteBright('Getting environments from /temp/.dotenvnav')}
+${chalk.whiteBright('Getting environments from /temp/.dotenvnav for project /temp/testProject')}
 
 ${chalk.whiteBright('default')}
 ${chalk.whiteBright('default2')}

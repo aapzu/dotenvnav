@@ -22,6 +22,12 @@ const initCommandModule = createCommandModule({
   describe: 'Initialize env variable links into a new directory',
   builder: (yargs) =>
     yargs
+      .option('config-root', {
+        alias: 'c',
+        type: 'string',
+        description: 'Root directory for the config files',
+        default: 'config',
+      })
       .option('override-existing', {
         alias: 'o',
         type: 'boolean',
@@ -54,11 +60,11 @@ const initCommandModule = createCommandModule({
       `Initializing config directory in ${path.join(configRoot, envName)}`,
     );
 
+    await upsertMetadataFile(args);
+
     await createDirectoryIfNotExists(getConfigDirectoryWithEnv(args));
 
     const envFiles = await getEnvFilesFromProjectDir(args);
-
-    await upsertMetadataFile(args);
 
     if (envFiles.length === 0) {
       logger.info(`No env files found in ${projectRoot}, nothing to do`);

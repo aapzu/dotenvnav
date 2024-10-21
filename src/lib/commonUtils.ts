@@ -1,6 +1,5 @@
 import path from 'node:path';
-
-import type { TCommonOptionsCamelCase } from '../cli';
+import { readMetadataFile } from './metadataFile';
 
 export const getProjectName = (projectRoot: string) =>
   path.basename(projectRoot);
@@ -8,28 +7,34 @@ export const getProjectName = (projectRoot: string) =>
 export const getConfigDirectory = ({
   configRoot,
   projectRoot,
-}: Pick<TCommonOptionsCamelCase, 'configRoot' | 'projectRoot'>) =>
+}: { configRoot: string; projectRoot: string }) =>
   path.join(configRoot, getProjectName(projectRoot));
 
 export const getConfigDirectoryWithEnv = ({
   configRoot,
   projectRoot,
   envName,
-}: Pick<TCommonOptionsCamelCase, 'configRoot' | 'projectRoot'> & {
+}: {
+  configRoot: string;
+  projectRoot: string;
   envName: string;
 }) => path.join(getConfigDirectory({ configRoot, projectRoot }), envName);
 
-export const getConfigFilePath = (
+export const getConfigFilePath = async (
   configFileName: string,
   {
-    configRoot,
+    metadataFilePath,
     projectRoot,
     envName,
-  }: Pick<TCommonOptionsCamelCase, 'configRoot' | 'projectRoot'> & {
+  }: {
+    metadataFilePath: string;
+    projectRoot: string;
     envName: string;
   },
-) =>
-  path.join(
+) => {
+  const { configRoot } = await readMetadataFile({ metadataFilePath });
+  return path.join(
     getConfigDirectoryWithEnv({ configRoot, projectRoot, envName }),
     configFileName,
   );
+};

@@ -8,7 +8,7 @@ import {
 
 type TForEachEnvFileArgs = Pick<
   TCommonOptionsCamelCase,
-  'projectRoot' | 'configRoot' | 'envFileName'
+  'projectRoot' | 'metadataFilePath' | 'envFileName'
 > & {
   envName: string;
   getEnvFilesFromProject?: boolean;

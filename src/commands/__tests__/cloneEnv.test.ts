@@ -9,8 +9,7 @@ const defaultOptions: Omit<
   YargsModuleArgs<typeof cloneEnvCommandModule>,
   'toEnvName' | 'fromEnvName'
 > = {
-  metadataFilePath: '/temp/.envnav.json',
-  configRoot: '/temp/.dotenvnav',
+  metadataFilePath: '/temp/.dotenvnav.json',
   projectRoot: '/temp/testProject',
   envFileName: ['.env', '.env2'],
   overrideExisting: false,

@@ -1,11 +1,13 @@
 import { getEnvs } from './getEnvs';
 import { logger } from './logger';
+import { readMetadataFile } from './metadataFile';
 
 export const checkEnv = async (
   envName: string,
-  configRoot: string,
+  metadataFilePath: string,
   projectRoot: string,
 ) => {
+  const { configRoot } = await readMetadataFile({ metadataFilePath });
   const possibleEnvs = await getEnvs({ configRoot, projectRoot });
   if (!possibleEnvs.includes(envName)) {
     logger.error(
