@@ -11,6 +11,8 @@ import { logger } from './lib/logger';
 import { normalizePath } from './lib/normalizers';
 import type { TKebabCaseKeysToCamelCase } from './types';
 
+import type pkgJson from '../package.json';
+
 log.setLevel('INFO');
 
 const commonYargs = yargs(process.argv.slice(2))
@@ -70,6 +72,8 @@ const commonYargs = yargs(process.argv.slice(2))
     process.exit(1);
   });
 
+const scriptName: keyof (typeof pkgJson)['bin'] = 'dotenvnav';
+
 export const parser = commonYargs
   .command(initCommandModule)
   .command(restoreCommandModule)
@@ -79,7 +83,7 @@ export const parser = commonYargs
   .command(useEnvCommandModule)
   .strict()
   .demandCommand()
-  .version(false)
+  .scriptName(scriptName)
   .recommendCommands()
   .help();
 
