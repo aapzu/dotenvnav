@@ -34,7 +34,7 @@ const cloneEnvCommandModule = createCommandModule({
       .check((argv) =>
         checkEnv(
           argv['from-env-name'],
-          argv['config-root'],
+          argv['metadata-file-path'],
           argv['project-root'],
         ),
       ),
@@ -42,7 +42,7 @@ const cloneEnvCommandModule = createCommandModule({
     await forEachEnvFile(
       async ({ configDirPath }) => {
         const configFilePath = configDirPath;
-        const newConfigFilePath = getConfigFilePath(
+        const newConfigFilePath = await getConfigFilePath(
           path.basename(configDirPath),
           { ...args, envName: toEnvName },
         );

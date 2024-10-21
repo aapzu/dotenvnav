@@ -8,7 +8,7 @@ import {
 } from '../metadataFile';
 
 const defaultOptions = {
-  metadataFilePath: '/temp/.envnav.json',
+  metadataFilePath: '/temp/.dotenvnav.json',
   configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
 };
@@ -117,7 +117,7 @@ describe('metadatafile', () => {
       mock({ '/temp': {} });
 
       await expect(validateMetadataFile(defaultOptions)).rejects.toThrow(
-        "Metadata file not found in /temp/.envnav.json. Please run 'init' first",
+        "Metadata file not found in /temp/.dotenvnav.json. Please run 'init' first",
       );
     });
 
@@ -133,6 +133,7 @@ describe('metadatafile', () => {
       mock({
         ...createMockMetadataFile({
           ...defaultOptions,
+          configRoot: '/temp/.dotenvnav',
           extraContent: {
             projects: {
               projectRootPath: '/temp/foobar/projectRootPath',
@@ -155,19 +156,17 @@ describe('metadatafile', () => {
       mock({
         ...createMockMetadataFile({
           ...defaultOptions,
-          extraContent: {
-            configRoot: '/temp2/.dotenvnav',
-          },
+          configRoot: '/temp2/.dotenvnav',
         }),
       });
 
       await expect(
         validateMetadataFile({
           ...defaultOptions,
-          configRoot: '/temp/.dotenvnav',
+          metadataFilePath: '/temp/.dotenvnav.json',
         }),
       ).rejects.toThrow(
-        'The metadata file /temp/.envnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
+        'The metadata file /temp/.dotenvnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
       );
     });
   });
