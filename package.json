@@ -16,7 +16,13 @@
     "lint": "biome lint",
     "lint:fix": "pnpm lint --fix",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "clone": "pnpm cli clone",
+    "init-env": "pnpm cli init-env",
+    "list-env-files": "pnpm cli list-env-files",
+    "lis-envs": "pnpm cli list-envs",
+    "restore": "pnpm cli restore",
+    "use-env": "pnpm cli use-env"
   },
   "keywords": ["dotenv"],
   "author": "aapzu",

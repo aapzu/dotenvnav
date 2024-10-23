@@ -55,6 +55,7 @@ const commonYargs = yargs(process.argv.slice(2))
     description: 'Dry run',
     default: false,
   })
+  .alias('h', 'help')
   .middleware(async (argv) => {
     if (argv.verbose) {
       log.setLevel('DEBUG');
@@ -63,11 +64,12 @@ const commonYargs = yargs(process.argv.slice(2))
       process.env.DRY_RUN = 'true';
     }
   })
-  .fail((_msg, err) => {
-    if (err) {
-      logger.error(err.message);
+  .fail((msg, err) => {
+    if (msg) {
+      logger.error(msg);
+      return process.exit(1);
     }
-    process.exit(1);
+    throw err;
   });
 
 export const parser = commonYargs
