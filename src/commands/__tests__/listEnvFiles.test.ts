@@ -25,6 +25,10 @@ describe('listEnvFiles command', () => {
 
   it('should find all env files and map them properly', async ({ expect }) => {
     const { getLogs } = createMockLogger();
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+
     mock({
       '/temp': {
         '.dotenvnav': {
@@ -41,6 +45,7 @@ describe('listEnvFiles command', () => {
     });
     await runCommand('list-env-files default', defaultOptions);
     const { info } = getLogs();
+    expect(exitSpy).toHaveBeenCalledWith(1);
     expect(info).toEqual(`
 ${chalk.whiteBright('Searching for environment files with pattern .env')}
 

@@ -4,20 +4,22 @@ import { getConfigFilePath } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
+import { getEnvs } from '../lib/getEnvs';
 import { logger } from '../lib/logger';
-import { validateMetadataFile } from '../lib/metadataFile';
-import { checkEnv } from '../lib/validators';
+import { createValidateMetadataFileChecker } from '../lib/metadataFile';
 
 const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',
   aliases: ['clone'],
   describe: 'Clone an environment',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .positional('from-env-name', {
         type: 'string',
         description: 'Name of the environment to clone from',
         demandOption: true,
+        choices:
+          (yargs.parsed && (await getEnvs(yargs.parsed.argv))) || undefined,
       })
       .positional('to-env-name', {
         type: 'string',
@@ -30,14 +32,7 @@ const cloneEnvCommandModule = createCommandModule({
         description: 'Override existing env',
         default: false,
       })
-      .middleware(validateMetadataFile)
-      .check((argv) =>
-        checkEnv(
-          argv['from-env-name'],
-          argv['metadata-file-path'],
-          argv['project-root'],
-        ),
-      ),
+      .check(createValidateMetadataFileChecker()),
   handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
     await forEachEnvFile(
       async ({ configDirPath }) => {
