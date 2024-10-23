@@ -14,7 +14,6 @@ const defaultOptions: TCommonOptions = {
   'metadata-file-path': '/temp/.envnav.json',
   'config-root': '/temp/.dotenvnav',
   'project-root': '/temp/testProject',
-  interactive: false,
   'dry-run': false,
   verbose: false,
   'env-file-name': ['.env.local'],

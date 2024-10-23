@@ -1,10 +1,9 @@
 import { z } from 'zod';
 
-import type { Arguments } from 'yargs-parser';
 import { getConfigDirectory } from './commonUtils';
 import { exists, getFiles } from './fsUtils';
 
-export const getEnvs = async (anyArgv: Arguments) => {
+export const getEnvs = async (anyArgv: Record<string, unknown>) => {
   const { configRoot, projectRoot } = z
     .object({ configRoot: z.string(), projectRoot: z.string() })
     .parse(anyArgv);
