@@ -1,17 +1,34 @@
 import mock from 'mock-fs';
 
+import { camelCase } from 'change-case';
+import type { Arguments } from 'yargs';
+import type { TCommonOptions, TCommonOptionsCamelCase } from '../../cli';
 import { createMockMetadataFile } from '../../testUtils';
 import {
+  createValidateMetadataFileChecker,
   readMetadataFile,
   upsertMetadataFile,
-  validateMetadataFile,
 } from '../metadataFile';
 
-const defaultOptions = {
-  metadataFilePath: '/temp/.dotenvnav.json',
-  configRoot: '/temp/.dotenvnav',
-  projectRoot: '/temp/testProject',
+const defaultOptions: TCommonOptions = {
+  'metadata-file-path': '/temp/.envnav.json',
+  'project-root': '/temp/testProject',
+  'dry-run': false,
+  verbose: false,
+  'env-file-name': ['.env.local'],
 };
+
+const configRoot = '/temp/.dotenvnav';
+
+const defaultArguments: Arguments<TCommonOptions> = {
+  ...defaultOptions,
+  _: [],
+  $0: '',
+};
+
+const defaultOptionsCamelCase = Object.fromEntries(
+  Object.entries(defaultOptions).map(([key, value]) => [camelCase(key), value]),
+) as TCommonOptionsCamelCase;
 
 describe('metadatafile', () => {
   afterEach(() => {
@@ -21,63 +38,57 @@ describe('metadatafile', () => {
   describe('upsertMetadataFile', () => {
     it('should create a metadata file', async () => {
       mock({
-        '/temp/.dotenvnav': {},
+        [configRoot]: {},
       });
 
-      await upsertMetadataFile(defaultOptions);
+      await upsertMetadataFile({ ...defaultOptionsCamelCase, configRoot });
 
-      expect({
-        ...createMockMetadataFile(defaultOptions),
-      }).toMatchFileStructure();
+      expect(
+        createMockMetadataFile(defaultOptionsCamelCase),
+      ).toMatchFileStructure();
     });
 
     it('should update a metadata file', async () => {
-      mock({
-        ...createMockMetadataFile(defaultOptions),
-      });
+      mock(createMockMetadataFile(defaultOptionsCamelCase));
 
       const updatedOptions = {
-        ...defaultOptions,
+        ...defaultOptionsCamelCase,
         configRoot: '/temp2/.dotenvnav',
         projectRoot: '/temp2/testProject',
       };
 
       await upsertMetadataFile(updatedOptions);
 
-      expect({
-        ...createMockMetadataFile(updatedOptions),
-      }).toMatchFileStructure();
+      expect(createMockMetadataFile(updatedOptions)).toMatchFileStructure();
     });
   });
 
   describe('readMetadataFile', () => {
     it('should read a metadata file', async () => {
-      const metadataFile = createMockMetadataFile(defaultOptions);
+      const metadataFile = createMockMetadataFile(defaultOptionsCamelCase);
 
-      mock({
-        ...metadataFile,
-      });
+      mock(metadataFile);
 
-      const metadata = await readMetadataFile(defaultOptions);
+      const metadata = await readMetadataFile(defaultOptionsCamelCase);
 
       expect(metadata).toEqual(
-        JSON.parse(metadataFile[defaultOptions.metadataFilePath]),
+        JSON.parse(metadataFile[defaultOptionsCamelCase.metadataFilePath]),
       );
     });
 
     it('should throw an error if the metadata file has invalid json in it', async () => {
       mock({
-        [defaultOptions.metadataFilePath]: 'invalid json',
+        [defaultOptionsCamelCase.metadataFilePath]: 'invalid json',
       });
 
-      await expect(readMetadataFile(defaultOptions)).rejects.toThrow(
+      await expect(readMetadataFile(defaultOptionsCamelCase)).rejects.toThrow(
         'Invalid JSON in metadata file',
       );
     });
 
     it('should throw an error if the metadata file format is not valid', async () => {
       mock({
-        [defaultOptions.metadataFilePath]: JSON.stringify(
+        [defaultOptionsCamelCase.metadataFilePath]: JSON.stringify(
           {
             configRoot: 'foobar',
             projects: 1,
@@ -88,7 +99,7 @@ describe('metadatafile', () => {
         ),
       });
 
-      await expect(readMetadataFile(defaultOptions)).rejects.toThrow(`Invalid metadata file: {
+      await expect(readMetadataFile(defaultOptionsCamelCase)).rejects.toThrow(`Invalid metadata file: {
   "_errors": [
     "Unrecognized key(s) in object: 'extra'"
   ],
@@ -105,68 +116,74 @@ describe('metadatafile', () => {
     it('should not throw if metadata file is missing but called with allowNotExists=true', async () => {
       mock({ '/temp': {} });
 
-      await expect(
-        validateMetadataFile({
-          ...defaultOptions,
-          allowNotExists: true,
-        }),
-      ).resolves.not.toThrow();
+      const validateMetadataFile = createValidateMetadataFileChecker({
+        allowNotExists: true,
+      });
+
+      expect(await validateMetadataFile(defaultArguments)).eql(true);
     });
 
     it('should throw if metadata file is missing', async () => {
       mock({ '/temp': {} });
 
-      await expect(validateMetadataFile(defaultOptions)).rejects.toThrow(
-        "Metadata file not found in /temp/.dotenvnav.json. Please run 'init' first",
+      const validateMetadataFile = createValidateMetadataFileChecker();
+
+      expect(await validateMetadataFile(defaultArguments)).eql(
+        "Metadata file not found in /temp/.envnav.json. Please run 'init' first.",
       );
     });
 
     it('should not throw if called with correct projectRoot', async () => {
-      mock({
-        ...createMockMetadataFile(defaultOptions),
-      });
+      mock(createMockMetadataFile(defaultOptionsCamelCase));
 
-      await expect(validateMetadataFile(defaultOptions)).resolves.not.toThrow();
+      const validateMetadataFile = createValidateMetadataFileChecker();
+
+      expect(await validateMetadataFile(defaultArguments)).eql(true);
     });
 
     it('should throw if called with incorrect projectRoot', async () => {
-      mock({
-        ...createMockMetadataFile({
-          ...defaultOptions,
-          configRoot: '/temp/.dotenvnav',
+      mock(
+        createMockMetadataFile({
+          ...defaultOptionsCamelCase,
           extraContent: {
             projects: {
               projectRootPath: '/temp/foobar/projectRootPath',
             },
           },
         }),
-      });
+      );
 
-      await expect(
-        validateMetadataFile({
-          ...defaultOptions,
-          projectRoot: '/temp/projectRootPath',
+      const validateMetadataFile = createValidateMetadataFileChecker();
+
+      expect(
+        await validateMetadataFile({
+          ...defaultArguments,
+          'project-root': '/temp/projectRootPath',
         }),
-      ).rejects.toThrow(
+      ).eql(
         'The project projectRootPath was initialized using different project root (/temp/foobar/projectRootPath). Refusing to proceed.',
       );
     });
 
     it('should throw if called with incorrect configRoot', async () => {
-      mock({
-        ...createMockMetadataFile({
-          ...defaultOptions,
-          configRoot: '/temp2/.dotenvnav',
+      mock(
+        createMockMetadataFile({
+          ...defaultOptionsCamelCase,
+          extraContent: {
+            configRoot: '/temp2/.dotenvnav',
+          },
         }),
-      });
+      );
 
-      await expect(
-        validateMetadataFile({
-          ...defaultOptions,
-          metadataFilePath: '/temp/.dotenvnav.json',
+      const validateMetadataFile = createValidateMetadataFileChecker();
+
+      expect(
+        await validateMetadataFile({
+          ...defaultArguments,
+          'config-root': '/temp/.dotenvnav',
         }),
-      ).rejects.toThrow(
-        'The metadata file /temp/.dotenvnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
+      ).eql(
+        'The metadata file /temp/.envnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
       );
     });
   });

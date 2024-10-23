@@ -10,17 +10,21 @@ import {
 } from '../lib/fsUtils';
 import { getEnvFilesFromProjectDir } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
-import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
-import { askOnce } from '../lib/prompt';
+import {
+  createValidateMetadataFileChecker,
+  upsertMetadataFile,
+} from '../lib/metadataFile';
 
+import { getEnvs } from '../lib/getEnvs';
 import { getEvenColumns } from '../lib/loggerUtils';
+import { askOnce } from '../lib/prompt';
 import useEnvModule from './useEnv';
 
 const initCommandModule = createCommandModule({
   command: 'init [env-name]',
   aliases: ['i'],
   describe: 'Initialize env variable links into a new directory',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .option('config-root', {
         alias: 'c',
@@ -45,14 +49,11 @@ const initCommandModule = createCommandModule({
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
+        choices:
+          (yargs.parsed && (await getEnvs(yargs.parsed.argv))) || undefined,
       })
-      .middleware((args) =>
-        validateMetadataFile({
-          ...args,
-          allowNotExists: true,
-        }),
-      ),
-  handler: async (args) => {
+      .check(createValidateMetadataFileChecker({ allowNotExists: true })),
+  async handler(args) {
     const { configRoot, overrideExisting, envName, projectRoot, alwaysYes } =
       args;
 
