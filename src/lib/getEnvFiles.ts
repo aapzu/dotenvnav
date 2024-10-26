@@ -6,6 +6,7 @@ import type { TCommonOptionsCamelCase } from '../cli';
 import { getConfigDirectoryWithEnv, getConfigFilePath } from './commonUtils';
 import { getFiles } from './fsUtils';
 import { logger } from './logger';
+import { readMetadataFile } from './metadataFile';
 
 export type TEnvFileObject = {
   projectPath: string;
@@ -29,14 +30,14 @@ const configFileNameToProjectFilePath = (configFileName: string) =>
 
 type TGetEnvFilesFromProjectDirOpts = Pick<
   TCommonOptionsCamelCase,
-  'projectRoot' | 'configRoot' | 'envFileName'
+  'projectRoot' | 'metadataFilePath' | 'envFileName'
 > & {
   envName: string;
   ignore?: string[];
 };
 
 export const getEnvFilesFromProjectDir = async ({
-  configRoot,
+  metadataFilePath,
   envFileName,
   projectRoot,
   envName,
@@ -61,31 +62,34 @@ export const getEnvFilesFromProjectDir = async ({
     logger.warn('No env files found');
   }
 
-  return mappedFilesFromProject.sort().map((dotenvnavFileName) => ({
-    projectPath: resolve(
-      projectRoot,
-      configFileNameToProjectFilePath(dotenvnavFileName),
-    ),
-    configDirPath: getConfigFilePath(dotenvnavFileName, {
-      configRoot,
-      projectRoot,
-      envName,
-    }),
-  }));
+  return Promise.all(
+    mappedFilesFromProject.sort().map(async (dotenvnavFileName) => ({
+      projectPath: resolve(
+        projectRoot,
+        configFileNameToProjectFilePath(dotenvnavFileName),
+      ),
+      configDirPath: await getConfigFilePath(dotenvnavFileName, {
+        metadataFilePath,
+        projectRoot,
+        envName,
+      }),
+    })),
+  );
 };
 
 export type TGetEnvFilesFromConfigDirOpts = Pick<
   TCommonOptionsCamelCase,
-  'projectRoot' | 'configRoot' | 'envFileName'
+  'projectRoot' | 'metadataFilePath' | 'envFileName'
 > & {
   envName: string;
 };
 
 export const getEnvFilesFromConfigDir = async ({
   projectRoot,
-  configRoot,
+  metadataFilePath,
   envName,
 }: TGetEnvFilesFromConfigDirOpts): Promise<Array<TEnvFileObject>> => {
+  const { configRoot } = await readMetadataFile({ metadataFilePath });
   const configDirectory = getConfigDirectoryWithEnv({
     projectRoot,
     configRoot,
@@ -93,15 +97,17 @@ export const getEnvFilesFromConfigDir = async ({
   });
   const filesFromConfig = await getFiles(configDirectory);
 
-  return filesFromConfig.sort().map((dotenvnavFileName) => ({
-    projectPath: resolve(
-      projectRoot,
-      configFileNameToProjectFilePath(dotenvnavFileName),
-    ),
-    configDirPath: getConfigFilePath(dotenvnavFileName, {
-      configRoot,
-      projectRoot,
-      envName,
-    }),
-  }));
+  return Promise.all(
+    filesFromConfig.sort().map(async (dotenvnavFileName) => ({
+      projectPath: resolve(
+        projectRoot,
+        configFileNameToProjectFilePath(dotenvnavFileName),
+      ),
+      configDirPath: await getConfigFilePath(dotenvnavFileName, {
+        metadataFilePath,
+        projectRoot,
+        envName,
+      }),
+    })),
+  );
 };

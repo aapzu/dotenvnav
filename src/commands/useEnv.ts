@@ -19,7 +19,11 @@ const useEnvCommandModule = createCommandModule({
       })
       .middleware(validateMetadataFile)
       .check((argv) =>
-        checkEnv(argv['env-name'], argv['config-root'], argv['project-root']),
+        checkEnv(
+          argv['env-name'],
+          argv['metadata-file-path'],
+          argv['project-root'],
+        ),
       ),
   handler: async (args) => {
     logger.info(`Using ${args.envName} env`);

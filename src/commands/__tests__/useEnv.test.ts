@@ -6,7 +6,6 @@ import type useEnvCommandModule from '../useEnv';
 
 const defaultOptions: YargsModuleArgs<typeof useEnvCommandModule> = {
   metadataFilePath: '/temp/.dotenvnav.json',
-  configRoot: '/temp/.dotenvnav',
   projectRoot: '/temp/testProject',
   envFileName: ['.env'],
   envName: 'default',
