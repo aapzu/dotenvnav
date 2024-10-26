@@ -32,11 +32,9 @@ describe('init command', () => {
     const { getLogs } = createMockLogger();
 
     setup({
-      '/temp': {
-        '.dotenvnav': {},
-        testProject: {
-          '.env': 'foo=bar',
-        },
+      [defaultOptions.configRoot]: {},
+      [defaultOptions.projectRoot]: {
+        '.env': 'foo=bar',
       },
       ...createMockMetadataFile({
         ...defaultOptions,
@@ -76,18 +74,16 @@ ${chalk.redBright('The project testProject was initialized using different proje
 
   it('creates configRoot if it does not exist', async () => {
     setup({
-      '/temp': {
-        testProject: {
-          '.env': 'foo=bar',
-          inner: {
-            '.env': 'foobar=barfoo',
-          },
+      [defaultOptions.projectRoot]: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
         },
       },
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav': {
+      [defaultOptions.configRoot]: {
         testProject: {
           testEnv: {
             'root.env': 'foo=bar',

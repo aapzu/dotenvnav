@@ -3,7 +3,10 @@ import { resolve } from 'node:path';
 import fastGlob from 'fast-glob';
 
 import type { TCommonOptionsCamelCase } from '../cli';
-import { getConfigDirectoryWithEnv, getConfigFilePath } from './commonUtils';
+import {
+  getConfigDirectoryWithEnv,
+  getConfigFilePathFromMetadataFile,
+} from './commonUtils';
 import { getFiles } from './fsUtils';
 import { logger } from './logger';
 import { readMetadataFile } from './metadataFile';
@@ -68,11 +71,14 @@ export const getEnvFilesFromProjectDir = async ({
         projectRoot,
         configFileNameToProjectFilePath(dotenvnavFileName),
       ),
-      configDirPath: await getConfigFilePath(dotenvnavFileName, {
-        metadataFilePath,
-        projectRoot,
-        envName,
-      }),
+      configDirPath: await getConfigFilePathFromMetadataFile(
+        dotenvnavFileName,
+        {
+          metadataFilePath,
+          projectRoot,
+          envName,
+        },
+      ),
     })),
   );
 };
@@ -89,7 +95,7 @@ export const getEnvFilesFromConfigDir = async ({
   metadataFilePath,
   envName,
 }: TGetEnvFilesFromConfigDirOpts): Promise<Array<TEnvFileObject>> => {
-  const { configRoot } = await readMetadataFile({ metadataFilePath });
+  const { configRoot } = await readMetadataFile(metadataFilePath);
   const configDirectory = getConfigDirectoryWithEnv({
     projectRoot,
     configRoot,
@@ -103,11 +109,14 @@ export const getEnvFilesFromConfigDir = async ({
         projectRoot,
         configFileNameToProjectFilePath(dotenvnavFileName),
       ),
-      configDirPath: await getConfigFilePath(dotenvnavFileName, {
-        metadataFilePath,
-        projectRoot,
-        envName,
-      }),
+      configDirPath: await getConfigFilePathFromMetadataFile(
+        dotenvnavFileName,
+        {
+          metadataFilePath,
+          projectRoot,
+          envName,
+        },
+      ),
     })),
   );
 };

@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { getConfigFilePath } from '../lib/commonUtils';
+import { getConfigFilePathFromMetadataFile } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
@@ -33,20 +33,26 @@ const cloneEnvCommandModule = createCommandModule({
         default: false,
       })
       .check(createValidateMetadataFileChecker()),
-  handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
+  handler: async ({
+    overrideExisting,
+    fromEnvName,
+    toEnvName,
+    metadataFilePath,
+    ...args
+  }) => {
     await forEachEnvFile(
       async ({ configDirPath }) => {
         const configFilePath = configDirPath;
-        const newConfigFilePath = await getConfigFilePath(
+        const newConfigFilePath = await getConfigFilePathFromMetadataFile(
           path.basename(configDirPath),
-          { ...args, envName: toEnvName },
+          { ...args, metadataFilePath, envName: toEnvName },
         );
 
         await createDirectoryIfNotExists(path.dirname(newConfigFilePath));
 
         await copy(configFilePath, newConfigFilePath, { overrideExisting });
       },
-      { ...args, envName: fromEnvName },
+      { ...args, metadataFilePath, envName: fromEnvName },
     );
 
     logger.info('Environment cloned');

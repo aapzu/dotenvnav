@@ -20,13 +20,11 @@ export const upsertMetadataFile = async ({
   configRoot,
   projectRoot,
   metadataFilePath,
-}: {
+}: Pick<TCommonOptionsCamelCase, 'projectRoot' | 'metadataFilePath'> & {
   configRoot: string;
-  projectRoot: string;
-  metadataFilePath: string;
 }) => {
   const currentMetadataFile = (await exists(metadataFilePath))
-    ? await readMetadataFile({ metadataFilePath })
+    ? await readMetadataFile(metadataFilePath)
     : undefined;
 
   const metadata: MetadataFile = {
@@ -42,12 +40,9 @@ export const upsertMetadataFile = async ({
   await writeFile(metadataFilePath, JSON.stringify(metadata, null, 2));
 };
 
-export const readMetadataFile = async ({
-  metadataFilePath,
-}: Pick<
-  TCommonOptionsCamelCase,
-  'metadataFilePath'
->): Promise<MetadataFile> => {
+export const readMetadataFile = async (
+  metadataFilePath: TCommonOptionsCamelCase['metadataFilePath'],
+): Promise<MetadataFile> => {
   const fileContent = await readFileContent(metadataFilePath);
   let parsedMetadataFile: unknown;
   try {
@@ -74,8 +69,8 @@ export const createValidateMetadataFileChecker =
   async ({
     'metadata-file-path': metadataFilePath,
     'project-root': projectRoot,
-    'config-root': configRoot,
-  }: Arguments<TCommonOptions>) => {
+    'config-root': newConfigRoot,
+  }: Arguments<TCommonOptions & { 'config-root'?: string }>) => {
     if (!(await exists(metadataFilePath))) {
       if (allowNotExists) {
         logger.debug('No metadata file found');
@@ -84,17 +79,12 @@ export const createValidateMetadataFileChecker =
       return `Metadata file not found in ${metadataFilePath}. Please run 'init' first.`;
     }
 
-    const metadataFileContent = await readMetadataFile({ metadataFilePath });
+    const { configRoot, projects } = await readMetadataFile(metadataFilePath);
     const projectName = getProjectName(projectRoot);
-    const initializedWithProjectRoot =
-      metadataFileContent.projects[projectName];
+    const initializedWithProjectRoot = projects[projectName];
 
-    if (
-      metadataFileContent.configRoot &&
-      configRoot &&
-      metadataFileContent.configRoot !== configRoot
-    ) {
-      return `The metadata file ${metadataFilePath} was initialized with different config root (${metadataFileContent.configRoot}). Refusing to proceed.`;
+    if (configRoot && newConfigRoot && configRoot !== newConfigRoot) {
+      return `The metadata file ${metadataFilePath} was initialized with different config root (${configRoot}). Refusing to proceed.`;
     }
 
     if (!initializedWithProjectRoot) {

@@ -15,8 +15,8 @@ import {
   upsertMetadataFile,
 } from '../lib/metadataFile';
 
-import { getEnvs } from '../lib/getEnvs';
 import { getEvenColumns } from '../lib/loggerUtils';
+import { normalizePath } from '../lib/normalizers';
 import { askOnce } from '../lib/prompt';
 import useEnvModule from './useEnv';
 
@@ -44,26 +44,33 @@ const initCommandModule = createCommandModule({
         description: 'Always answer yes to prompts',
         default: false,
       })
+      .option('config-root', {
+        alias: 'c',
+        type: 'string',
+        description: 'Path to the config root directory',
+        default: '~/.dotenvnav',
+        coerce: normalizePath,
+      })
       .positional('env-name', {
         alias: 'e',
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
-        choices:
-          (yargs.parsed && (await getEnvs(yargs.parsed.argv))) || undefined,
       })
       .check(createValidateMetadataFileChecker({ allowNotExists: true })),
   async handler(args) {
-    const { configRoot, overrideExisting, envName, projectRoot, alwaysYes } =
+    const { overrideExisting, envName, projectRoot, alwaysYes, configRoot } =
       args;
 
     logger.info(
       `Initializing config directory in ${path.join(configRoot, envName)}`,
     );
 
-    await upsertMetadataFile(args);
+    await createDirectoryIfNotExists(
+      getConfigDirectoryWithEnv({ configRoot, projectRoot, envName }),
+    );
 
-    await createDirectoryIfNotExists(getConfigDirectoryWithEnv(args));
+    await upsertMetadataFile(args);
 
     const envFiles = await getEnvFilesFromProjectDir(args);
 

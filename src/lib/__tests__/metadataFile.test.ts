@@ -11,7 +11,7 @@ import {
 } from '../metadataFile';
 
 const defaultOptions: TCommonOptions = {
-  'metadata-file-path': '/temp/.envnav.json',
+  'metadata-file-path': '/temp/.dotenvnav.json',
   'project-root': '/temp/testProject',
   'dry-run': false,
   verbose: false,
@@ -41,15 +41,26 @@ describe('metadatafile', () => {
         [configRoot]: {},
       });
 
-      await upsertMetadataFile({ ...defaultOptionsCamelCase, configRoot });
+      await upsertMetadataFile({
+        ...defaultOptionsCamelCase,
+        configRoot: '/temp/.dotenvnav',
+      });
 
       expect(
-        createMockMetadataFile(defaultOptionsCamelCase),
+        createMockMetadataFile({
+          ...defaultOptionsCamelCase,
+          configRoot: '/temp/.dotenvnav',
+        }),
       ).toMatchFileStructure();
     });
 
     it('should update a metadata file', async () => {
-      mock(createMockMetadataFile(defaultOptionsCamelCase));
+      mock(
+        createMockMetadataFile({
+          ...defaultOptionsCamelCase,
+          configRoot: '/temp/.dotenvnav',
+        }),
+      );
 
       const updatedOptions = {
         ...defaultOptionsCamelCase,
@@ -65,11 +76,16 @@ describe('metadatafile', () => {
 
   describe('readMetadataFile', () => {
     it('should read a metadata file', async () => {
-      const metadataFile = createMockMetadataFile(defaultOptionsCamelCase);
+      const metadataFile = createMockMetadataFile({
+        ...defaultOptionsCamelCase,
+        configRoot: '/temp/.dotenvnav',
+      });
 
       mock(metadataFile);
 
-      const metadata = await readMetadataFile(defaultOptionsCamelCase);
+      const metadata = await readMetadataFile(
+        defaultOptionsCamelCase.metadataFilePath,
+      );
 
       expect(metadata).toEqual(
         JSON.parse(metadataFile[defaultOptionsCamelCase.metadataFilePath]),
@@ -81,9 +97,9 @@ describe('metadatafile', () => {
         [defaultOptionsCamelCase.metadataFilePath]: 'invalid json',
       });
 
-      await expect(readMetadataFile(defaultOptionsCamelCase)).rejects.toThrow(
-        'Invalid JSON in metadata file',
-      );
+      await expect(
+        readMetadataFile(defaultOptionsCamelCase.metadataFilePath),
+      ).rejects.toThrow('Invalid JSON in metadata file');
     });
 
     it('should throw an error if the metadata file format is not valid', async () => {
@@ -99,7 +115,9 @@ describe('metadatafile', () => {
         ),
       });
 
-      await expect(readMetadataFile(defaultOptionsCamelCase)).rejects.toThrow(`Invalid metadata file: {
+      await expect(
+        readMetadataFile(defaultOptionsCamelCase.metadataFilePath),
+      ).rejects.toThrow(`Invalid metadata file: {
   "_errors": [
     "Unrecognized key(s) in object: 'extra'"
   ],
@@ -129,7 +147,7 @@ describe('metadatafile', () => {
       const validateMetadataFile = createValidateMetadataFileChecker();
 
       expect(await validateMetadataFile(defaultArguments)).eql(
-        "Metadata file not found in /temp/.envnav.json. Please run 'init' first.",
+        "Metadata file not found in /temp/.dotenvnav.json. Please run 'init' first.",
       );
     });
 
@@ -145,6 +163,7 @@ describe('metadatafile', () => {
       mock(
         createMockMetadataFile({
           ...defaultOptionsCamelCase,
+          configRoot: '/temp/.dotenvnav',
           extraContent: {
             projects: {
               projectRootPath: '/temp/foobar/projectRootPath',
@@ -169,9 +188,7 @@ describe('metadatafile', () => {
       mock(
         createMockMetadataFile({
           ...defaultOptionsCamelCase,
-          extraContent: {
-            configRoot: '/temp2/.dotenvnav',
-          },
+          configRoot: '/temp2/.dotenvnav',
         }),
       );
 
@@ -183,7 +200,7 @@ describe('metadatafile', () => {
           'config-root': '/temp/.dotenvnav',
         }),
       ).eql(
-        'The metadata file /temp/.envnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
+        'The metadata file /temp/.dotenvnav.json was initialized with different config root (/temp2/.dotenvnav). Refusing to proceed.',
       );
     });
   });

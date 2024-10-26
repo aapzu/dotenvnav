@@ -2,7 +2,14 @@ import { afterEach } from 'node:test';
 
 import mock from 'mock-fs';
 
+import { createMockMetadataFile } from '../../testUtils';
 import { getEnvs } from '../getEnvs';
+
+const defaultOptions = {
+  projectRoot: '/temp/testProject',
+  metadataFilePath: '/temp/.dotenvnav.json',
+  configRoot: '/temp/.dotenvnav',
+};
 
 describe('getEnvs', () => {
   afterEach(() => {
@@ -11,60 +18,51 @@ describe('getEnvs', () => {
 
   it('should throw if configDirectory does not exist', async () => {
     mock({
-      '/temp': {},
+      ...createMockMetadataFile(defaultOptions),
     });
-    await expect(
-      getEnvs({
-        configRoot: '/temp/.dotenvnav',
-        projectRoot: '/temp/testProject',
-      }),
-    ).rejects.toThrow(
+    await expect(getEnvs(defaultOptions)).rejects.toThrow(
       'Config directory does not exist: /temp/.dotenvnav/testProject',
     );
   });
 
   it('should find all envs', async () => {
     mock({
-      '/temp': {
-        '.dotenvnav': {
-          testProject: {
-            default: {},
-            testEnv: {},
-            foobar: {},
-          },
+      [defaultOptions.configRoot]: {
+        testProject: {
+          default: {},
+          testEnv: {},
+          foobar: {},
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
-    expect(
-      await getEnvs({
-        configRoot: '/temp/.dotenvnav',
-        projectRoot: '/temp/testProject',
-      }),
-    ).toEqual(['default', 'foobar', 'testEnv']);
+    expect(await getEnvs(defaultOptions)).toEqual([
+      'default',
+      'foobar',
+      'testEnv',
+    ]);
   });
 
   it("should not list other projects' envs", async () => {
     mock({
-      '/temp': {
-        '.dotenvnav': {
-          testProject: {
-            default: {},
-            testEnv: {},
-            foobar: {},
-          },
-          testProject2: {
-            default2: {},
-            testEnv2: {},
-            foobar2: {},
-          },
+      [defaultOptions.configRoot]: {
+        testProject: {
+          default: {},
+          testEnv: {},
+          foobar: {},
+        },
+        testProject2: {
+          default2: {},
+          testEnv2: {},
+          foobar2: {},
         },
       },
+      ...createMockMetadataFile(defaultOptions),
     });
-    expect(
-      await getEnvs({
-        configRoot: '/temp/.dotenvnav',
-        projectRoot: '/temp/testProject',
-      }),
-    ).toEqual(['default', 'foobar', 'testEnv']);
+    expect(await getEnvs(defaultOptions)).toEqual([
+      'default',
+      'foobar',
+      'testEnv',
+    ]);
   });
 });

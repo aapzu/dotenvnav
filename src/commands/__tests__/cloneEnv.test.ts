@@ -7,10 +7,9 @@ import { createMockLogger } from '../../testUtils/mockLogger';
 import type { YargsModuleArgs } from '../../types';
 import type cloneEnvCommandModule from '../cloneEnv';
 
-const defaultOptions: Omit<
-  YargsModuleArgs<typeof cloneEnvCommandModule>,
-  'toEnvName' | 'fromEnvName'
-> = {
+const defaultOptions: YargsModuleArgs<typeof cloneEnvCommandModule> = {
+  fromEnvName: 'testEnv',
+  toEnvName: 'testEnv2',
   metadataFilePath: '/temp/.dotenvnav.json',
   projectRoot: '/temp/testProject',
   envFileName: ['.env', '.env2'],
@@ -48,6 +47,7 @@ describe('cloneEnv command', () => {
       },
       ...createMockMetadataFile({
         ...defaultOptions,
+        configRoot: '/temp/.dotenvnav',
         projectRoot: '/temp/foobar/testProject',
       }),
     });
@@ -55,7 +55,7 @@ describe('cloneEnv command', () => {
     await runCommand('clone-env testEnv testEnv2', defaultOptions);
     const { error } = getLogs();
     expect(error).eql(`
-${chalk.redBright('The metadata file /temp/.dotenvnav.json was initialized with different config root (/temp/.dotenvnav). Refusing to proceed.')}
+${chalk.redBright('The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.')}
 `);
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
