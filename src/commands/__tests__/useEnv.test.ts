@@ -13,6 +13,8 @@ const defaultOptions: YargsModuleArgs<typeof useEnvCommandModule> = {
   dryRun: false,
 };
 
+const configRoot = '/temp/.dotenvnav';
+
 describe('useEnv command', () => {
   afterEach(() => {
     mock.restore();
@@ -21,23 +23,21 @@ describe('useEnv command', () => {
 
   it('should take the new env into use when the config files are entirely missing', async () => {
     mock({
-      '/temp': {
-        '.dotenvnav': {
-          testProject: {
-            test: {
-              'root.env': 'test=root',
-              'inner__.env': 'test=inner',
-              'inner__doubleInner__.env': 'test=doubleInner',
-            },
-          },
-        },
+      [configRoot]: {
         testProject: {
-          inner: {
-            doubleInner: {},
-            doubleInner2: {},
+          test: {
+            'root.env': 'test=root',
+            'inner__.env': 'test=inner',
+            'inner__doubleInner__.env': 'test=doubleInner',
           },
-          inner2: {},
         },
+      },
+      [defaultOptions.projectRoot]: {
+        inner: {
+          doubleInner: {},
+          doubleInner2: {},
+        },
+        inner2: {},
       },
       ...createMockMetadataFile(defaultOptions),
     });
@@ -45,20 +45,18 @@ describe('useEnv command', () => {
     await runCommand('use-env test', defaultOptions);
 
     expect({
-      '/temp': {
-        testProject: {
+      [defaultOptions.projectRoot]: {
+        '.env': mock.symlink({
+          path: '/temp/.dotenvnav/testProject/test/root.env',
+        }),
+        inner: {
           '.env': mock.symlink({
-            path: '/temp/.dotenvnav/testProject/test/root.env',
+            path: '/temp/.dotenvnav/testProject/test/inner__.env',
           }),
-          inner: {
+          doubleInner: {
             '.env': mock.symlink({
-              path: '/temp/.dotenvnav/testProject/test/inner__.env',
+              path: '/temp/.dotenvnav/testProject/test/inner__doubleInner__.env',
             }),
-            doubleInner: {
-              '.env': mock.symlink({
-                path: '/temp/.dotenvnav/testProject/test/inner__doubleInner__.env',
-              }),
-            },
           },
         },
       },
@@ -67,38 +65,36 @@ describe('useEnv command', () => {
 
   it('should overwrite existing config files with the new env', async () => {
     mock({
-      '/temp': {
-        '.dotenvnav': {
-          testProject: {
-            test: {
-              'root.env': 'test=root',
-              'inner__.env': 'test=inner',
-              'inner__doubleInner__.env': 'test=doubleInner',
-            },
-            other: {
-              'root.env': 'other=root',
-              'inner__.env': 'other=inner',
-              'doubleInner__.env': 'other=doubleInner',
-            },
-          },
-        },
+      [configRoot]: {
         testProject: {
-          '.env': mock.symlink({
-            path: '/temp/.dotenvnav/testProject/other/root.env',
-          }),
-          inner: {
-            '.env': mock.symlink({
-              path: '/temp/.dotenvnav/testProject/other/inner__.env',
-            }),
-            doubleInner: {
-              '.env': mock.symlink({
-                path: '/temp/.dotenvnav/testProject/other/inner__doubleInner__.env',
-              }),
-            },
-            doubleInner2: {},
+          test: {
+            'root.env': 'test=root',
+            'inner__.env': 'test=inner',
+            'inner__doubleInner__.env': 'test=doubleInner',
           },
-          inner2: {},
+          other: {
+            'root.env': 'other=root',
+            'inner__.env': 'other=inner',
+            'doubleInner__.env': 'other=doubleInner',
+          },
         },
+      },
+      [defaultOptions.projectRoot]: {
+        '.env': mock.symlink({
+          path: '/temp/.dotenvnav/testProject/other/root.env',
+        }),
+        inner: {
+          '.env': mock.symlink({
+            path: '/temp/.dotenvnav/testProject/other/inner__.env',
+          }),
+          doubleInner: {
+            '.env': mock.symlink({
+              path: '/temp/.dotenvnav/testProject/other/inner__doubleInner__.env',
+            }),
+          },
+          doubleInner2: {},
+        },
+        inner2: {},
       },
       ...createMockMetadataFile(defaultOptions),
     });
@@ -106,7 +102,7 @@ describe('useEnv command', () => {
     await runCommand('use-env test', defaultOptions);
 
     expect({
-      '/temp/testProject': {
+      [defaultOptions.projectRoot]: {
         '.env': mock.symlink({
           path: '/temp/.dotenvnav/testProject/test/root.env',
         }),
@@ -126,41 +122,39 @@ describe('useEnv command', () => {
 
   it('should only go through the files in config dir, not all env files in the project', async () => {
     mock({
-      '/temp': {
-        '.dotenvnav': {
-          testProject: {
-            test: {
-              'root.env': 'test=root',
-              'inner__.env': 'test=inner',
-              'inner__doubleInner__.env': 'test=doubleInner',
-            },
-            other: {
-              'root.env': 'other=root',
-              'inner__.env': 'other=inner',
-              'doubleInner__.env': 'other=doubleInner',
-            },
+      [configRoot]: {
+        testProject: {
+          test: {
+            'root.env': 'test=root',
+            'inner__.env': 'test=inner',
+            'inner__doubleInner__.env': 'test=doubleInner',
+          },
+          other: {
+            'root.env': 'other=root',
+            'inner__.env': 'other=inner',
+            'doubleInner__.env': 'other=doubleInner',
           },
         },
-        testProject: {
+      },
+      [defaultOptions.projectRoot]: {
+        '.env': mock.symlink({
+          path: '/temp/.dotenvnav/testProject/other/root.env',
+        }),
+        inner: {
           '.env': mock.symlink({
-            path: '/temp/.dotenvnav/testProject/other/root.env',
+            path: '/temp/.dotenvnav/testProject/other/inner__.env',
           }),
-          inner: {
+          doubleInner: {
             '.env': mock.symlink({
-              path: '/temp/.dotenvnav/testProject/other/inner__.env',
+              path: '/temp/.dotenvnav/testProject/other/inner__doubleInner__.env',
             }),
-            doubleInner: {
-              '.env': mock.symlink({
-                path: '/temp/.dotenvnav/testProject/other/inner__doubleInner__.env',
-              }),
-            },
-            doubleInner2: {
-              '.env': 'doubleInner2',
-            },
           },
-          inner2: {
-            '.env': 'inner2',
+          doubleInner2: {
+            '.env': 'doubleInner2',
           },
+        },
+        inner2: {
+          '.env': 'inner2',
         },
       },
       ...createMockMetadataFile(defaultOptions),
@@ -169,7 +163,7 @@ describe('useEnv command', () => {
     await runCommand('use-env test', defaultOptions);
 
     expect({
-      '/temp/testProject': {
+      [defaultOptions.projectRoot]: {
         '.env': mock.symlink({
           path: '/temp/.dotenvnav/testProject/test/root.env',
         }),

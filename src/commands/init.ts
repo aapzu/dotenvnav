@@ -10,17 +10,21 @@ import {
 } from '../lib/fsUtils';
 import { getEnvFilesFromProjectDir } from '../lib/getEnvFiles';
 import { logger } from '../lib/logger';
-import { upsertMetadataFile, validateMetadataFile } from '../lib/metadataFile';
-import { askOnce } from '../lib/prompt';
+import {
+  createValidateMetadataFileChecker,
+  upsertMetadataFile,
+} from '../lib/metadataFile';
 
 import { getEvenColumns } from '../lib/loggerUtils';
+import { normalizePath } from '../lib/normalizers';
+import { askOnce } from '../lib/prompt';
 import useEnvModule from './useEnv';
 
 const initCommandModule = createCommandModule({
   command: 'init [env-name]',
   aliases: ['i'],
   describe: 'Initialize env variable links into a new directory',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .option('config-root', {
         alias: 'c',
@@ -40,29 +44,33 @@ const initCommandModule = createCommandModule({
         description: 'Always answer yes to prompts',
         default: false,
       })
+      .option('config-root', {
+        alias: 'c',
+        type: 'string',
+        description: 'Path to the config root directory',
+        default: '~/.dotenvnav',
+        coerce: normalizePath,
+      })
       .positional('env-name', {
         alias: 'e',
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
       })
-      .middleware((args) =>
-        validateMetadataFile({
-          ...args,
-          allowNotExists: true,
-        }),
-      ),
-  handler: async (args) => {
-    const { configRoot, overrideExisting, envName, projectRoot, alwaysYes } =
+      .check(createValidateMetadataFileChecker({ allowNotExists: true })),
+  async handler(args) {
+    const { overrideExisting, envName, projectRoot, alwaysYes, configRoot } =
       args;
 
     logger.info(
       `Initializing config directory in ${path.join(configRoot, envName)}`,
     );
 
-    await upsertMetadataFile(args);
+    await createDirectoryIfNotExists(
+      getConfigDirectoryWithEnv({ configRoot, projectRoot, envName }),
+    );
 
-    await createDirectoryIfNotExists(getConfigDirectoryWithEnv(args));
+    await upsertMetadataFile(args);
 
     const envFiles = await getEnvFilesFromProjectDir(args);
 

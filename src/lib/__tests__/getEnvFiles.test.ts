@@ -8,6 +8,14 @@ import {
   getEnvFilesFromProjectDir,
 } from '../getEnvFiles';
 
+const defaultOptions = {
+  metadataFilePath: '/temp/.dotenvnav.json',
+  projectRoot: '/temp/testProject',
+  configRoot: '/temp/.dotenvnav',
+  envName: 'default',
+  envFileName: ['.env', '.env2'],
+};
+
 describe('getEnvFiles', () => {
   afterEach(() => {
     mock.restore();
@@ -16,32 +24,22 @@ describe('getEnvFiles', () => {
   describe('getEnvFilesFromProjectDir', () => {
     it('should find all env files from project and map them properly', async () => {
       mock({
-        '/temp': {
-          '.dotenvnav': {},
-          testProject: {
-            '.env': '',
-            foobar: {
-              test: {
-                '.env': '',
-              },
-              test2: {
-                '.env': '',
-                '.env2': '',
-              },
+        [defaultOptions.configRoot]: {},
+        [defaultOptions.projectRoot]: {
+          '.env': '',
+          foobar: {
+            test: {
+              '.env': '',
+            },
+            test2: {
+              '.env': '',
+              '.env2': '',
             },
           },
         },
-        ...createMockMetadataFile({
-          metadataFilePath: '/temp/.dotenvnav.json',
-          projectRoot: '/temp/testProject',
-        }),
+        ...createMockMetadataFile(defaultOptions),
       });
-      const envFiles = await getEnvFilesFromProjectDir({
-        metadataFilePath: '/temp/.dotenvnav.json',
-        projectRoot: '/temp/testProject',
-        envName: 'default',
-        envFileName: ['.env', '.env2'],
-      });
+      const envFiles = await getEnvFilesFromProjectDir(defaultOptions);
       expect(envFiles).toEqual([
         {
           projectPath: '/temp/testProject/foobar/test2/.env',
@@ -67,37 +65,27 @@ describe('getEnvFiles', () => {
 
     it("should not list other projects' env files", async () => {
       mock({
-        '/temp': {
-          '.dotenvnav': {},
-          testProject: {
-            '.env': '',
-            foobar: {
-              test: {
-                '.env': '',
-              },
-              test2: {
-                '.env': '',
-              },
+        [defaultOptions.configRoot]: {},
+        [defaultOptions.projectRoot]: {
+          '.env': '',
+          foobar: {
+            test: {
+              '.env': '',
             },
-          },
-          testProject2: {
-            '.env': '',
-            foobar: {
+            test2: {
               '.env': '',
             },
           },
         },
-        ...createMockMetadataFile({
-          metadataFilePath: '/temp/.dotenvnav.json',
-          projectRoot: '/temp/testProject',
-        }),
+        '/temp/testProject2': {
+          '.env': '',
+          foobar: {
+            '.env': '',
+          },
+        },
+        ...createMockMetadataFile(defaultOptions),
       });
-      const envFiles = await getEnvFilesFromProjectDir({
-        metadataFilePath: '/temp/.dotenvnav.json',
-        projectRoot: '/temp/testProject',
-        envName: 'default',
-        envFileName: ['.env'],
-      });
+      const envFiles = await getEnvFilesFromProjectDir(defaultOptions);
       expect(envFiles).toEqual([
         {
           projectPath: '/temp/testProject/foobar/test2/.env',
@@ -120,36 +108,26 @@ describe('getEnvFiles', () => {
   describe('getEnvFilesFromConfigDir', () => {
     it('should find all env files from config and map them properly', async () => {
       mock({
-        '/temp': {
-          '.dotenvnav': {
-            testProject: {
-              default: {
-                'root.env': symlink({ path: '/temp/testProject/.env' }),
-                'inner__.env': symlink({
-                  path: '/temp/testProject/inner/.env',
-                }),
-                'inner__doubleInner__.env': symlink({
-                  path: '/temp/testProject/inner/doubleInner/.env',
-                }),
-              },
+        [defaultOptions.configRoot]: {
+          testProject: {
+            default: {
+              'root.env': symlink({ path: '/temp/testProject/.env' }),
+              'inner__.env': symlink({
+                path: '/temp/testProject/inner/.env',
+              }),
+              'inner__doubleInner__.env': symlink({
+                path: '/temp/testProject/inner/doubleInner/.env',
+              }),
             },
           },
-          testProject: {
-            '.env': '',
-            another: { '.env': '' },
-          },
         },
-        ...createMockMetadataFile({
-          metadataFilePath: '/temp/.dotenvnav.json',
-          projectRoot: '/temp/testProject',
-        }),
+        [defaultOptions.projectRoot]: {
+          '.env': '',
+          another: { '.env': '' },
+        },
+        ...createMockMetadataFile(defaultOptions),
       });
-      const envFiles = await getEnvFilesFromConfigDir({
-        metadataFilePath: '/temp/.dotenvnav.json',
-        projectRoot: '/temp/testProject',
-        envName: 'default',
-        envFileName: ['.env'],
-      });
+      const envFiles = await getEnvFilesFromConfigDir(defaultOptions);
       expect(envFiles).toEqual([
         {
           projectPath: '/temp/testProject/inner/.env',

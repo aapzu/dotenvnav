@@ -1,7 +1,9 @@
 import mock from 'mock-fs';
 import type FileSystem from 'mock-fs/lib/filesystem';
 
+import chalk from 'chalk';
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import { createMockLogger } from '../../testUtils/mockLogger';
 import type { YargsModuleArgs } from '../../types';
 import type initCommandModule from '../init';
 
@@ -27,12 +29,12 @@ describe('init command', () => {
   });
 
   it('throws if the metadataFile does not match the given projectRoot', async () => {
+    const { getLogs } = createMockLogger();
+
     setup({
-      '/temp': {
-        '.dotenvnav': {},
-        testProject: {
-          '.env': 'foo=bar',
-        },
+      [defaultOptions.configRoot]: {},
+      [defaultOptions.projectRoot]: {
+        '.env': 'foo=bar',
       },
       ...createMockMetadataFile({
         ...defaultOptions,
@@ -40,9 +42,17 @@ describe('init command', () => {
       }),
     });
 
-    await expect(runCommand('init', defaultOptions)).rejects.toThrow(
-      'The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.',
-    );
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+
+    await runCommand('init', defaultOptions);
+
+    const { error } = getLogs();
+    expect(error).eql(`
+${chalk.redBright('The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.')}
+`);
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   it('creates a metadata file if it does not exist', async () => {
@@ -64,18 +74,16 @@ describe('init command', () => {
 
   it('creates configRoot if it does not exist', async () => {
     setup({
-      '/temp': {
-        testProject: {
-          '.env': 'foo=bar',
-          inner: {
-            '.env': 'foobar=barfoo',
-          },
+      [defaultOptions.projectRoot]: {
+        '.env': 'foo=bar',
+        inner: {
+          '.env': 'foobar=barfoo',
         },
       },
     });
     await runCommand('init', defaultOptions);
     expect({
-      '/temp/.dotenvnav': {
+      [defaultOptions.configRoot]: {
         testProject: {
           testEnv: {
             'root.env': 'foo=bar',

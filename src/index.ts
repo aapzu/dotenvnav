@@ -2,4 +2,4 @@
 
 import { parser } from './cli';
 
-parser.parse();
+await parser.parseAsync();

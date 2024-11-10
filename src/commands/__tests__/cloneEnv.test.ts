@@ -1,14 +1,15 @@
 import mock from 'mock-fs';
 import type FileSystem from 'mock-fs/lib/filesystem';
 
+import chalk from 'chalk';
 import { createMockMetadataFile, runCommand } from '../../testUtils';
+import { createMockLogger } from '../../testUtils/mockLogger';
 import type { YargsModuleArgs } from '../../types';
 import type cloneEnvCommandModule from '../cloneEnv';
 
-const defaultOptions: Omit<
-  YargsModuleArgs<typeof cloneEnvCommandModule>,
-  'toEnvName' | 'fromEnvName'
-> = {
+const defaultOptions: YargsModuleArgs<typeof cloneEnvCommandModule> = {
+  fromEnvName: 'testEnv',
+  toEnvName: 'testEnv2',
   metadataFilePath: '/temp/.dotenvnav.json',
   projectRoot: '/temp/testProject',
   envFileName: ['.env', '.env2'],
@@ -27,6 +28,12 @@ describe('cloneEnv command', () => {
   });
 
   it('throws if the metadataFile does not match the given projectRoot', async () => {
+    const { getLogs } = createMockLogger();
+
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+
     setup({
       '/temp': {
         '.dotenvnav': {
@@ -40,15 +47,17 @@ describe('cloneEnv command', () => {
       },
       ...createMockMetadataFile({
         ...defaultOptions,
+        configRoot: '/temp/.dotenvnav',
         projectRoot: '/temp/foobar/testProject',
       }),
     });
 
-    await expect(
-      runCommand('clone-env testEnv testEnv2', defaultOptions),
-    ).rejects.toThrow(
-      'The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.',
-    );
+    await runCommand('clone-env testEnv testEnv2', defaultOptions);
+    const { error } = getLogs();
+    expect(error).eql(`
+${chalk.redBright('The project testProject was initialized using different project root (/temp/foobar/testProject). Refusing to proceed.')}
+`);
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   it('should clone an environment', async () => {

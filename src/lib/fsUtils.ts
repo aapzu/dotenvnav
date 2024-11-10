@@ -307,7 +307,6 @@ export const isSymlink = async (path: string): Promise<boolean> => {
  */
 export const readFileContent = async (path: string): Promise<string> => {
   const finalPath = await fs.realpath(path);
-
   return fs.readFile(finalPath, 'utf8');
 };
 

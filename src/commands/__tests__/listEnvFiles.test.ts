@@ -25,6 +25,7 @@ describe('listEnvFiles command', () => {
 
   it('should find all env files and map them properly', async ({ expect }) => {
     const { getLogs } = createMockLogger();
+
     mock({
       '/temp': {
         '.dotenvnav': {
