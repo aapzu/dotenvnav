@@ -1,0 +1,24 @@
+name: Install
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: 'Node.js version'
+        required: true
+        default: '18.x'
+      pnpm_version:
+        description: 'pnpm version'
+        required: true
+        default: '8.13.1'
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm ${{ inputs.pnpm_version }}
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm_version }}
+          run_install: true
+
