@@ -1,4 +1,4 @@
-name: Build
+name: Lint
 on:
   push:
     branches: 
@@ -10,9 +10,9 @@ on:
 jobs:
   install:
     uses: ./.github/workflows/install.yml`
-  build:
+  lint:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - name: Build
-        run: pnpm build
+      - name: Lint & format
+        run: pnpm ci
