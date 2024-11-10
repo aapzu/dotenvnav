@@ -9,7 +9,7 @@ on:
   workflow_call:
 jobs:
   install:
-    uses: ./.github/workflows/install.yml`
+    uses: ./.github/workflows/install.yml
   build:
     needs: install
     runs-on: ubuntu-latest
