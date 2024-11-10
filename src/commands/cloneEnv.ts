@@ -1,23 +1,25 @@
 import path from 'node:path';
 
-import { getConfigFilePath } from '../lib/commonUtils';
+import { getConfigFilePathFromMetadataFile } from '../lib/commonUtils';
 import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { copy, createDirectoryIfNotExists } from '../lib/fsUtils';
+import { getEnvs } from '../lib/getEnvs';
 import { logger } from '../lib/logger';
-import { validateMetadataFile } from '../lib/metadataFile';
-import { checkEnv } from '../lib/validators';
+import { createValidateMetadataFileChecker } from '../lib/metadataFile';
 
 const cloneEnvCommandModule = createCommandModule({
   command: 'clone-env <fromEnvName> <toEnvName>',
   aliases: ['clone'],
   describe: 'Clone an environment',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .positional('from-env-name', {
         type: 'string',
         description: 'Name of the environment to clone from',
         demandOption: true,
+        choices:
+          (yargs.parsed && (await getEnvs(yargs.parsed.argv))) || undefined,
       })
       .positional('to-env-name', {
         type: 'string',
@@ -30,28 +32,27 @@ const cloneEnvCommandModule = createCommandModule({
         description: 'Override existing env',
         default: false,
       })
-      .middleware(validateMetadataFile)
-      .check((argv) =>
-        checkEnv(
-          argv['from-env-name'],
-          argv['metadata-file-path'],
-          argv['project-root'],
-        ),
-      ),
-  handler: async ({ overrideExisting, fromEnvName, toEnvName, ...args }) => {
+      .check(createValidateMetadataFileChecker()),
+  handler: async ({
+    overrideExisting,
+    fromEnvName,
+    toEnvName,
+    metadataFilePath,
+    ...args
+  }) => {
     await forEachEnvFile(
       async ({ configDirPath }) => {
         const configFilePath = configDirPath;
-        const newConfigFilePath = await getConfigFilePath(
+        const newConfigFilePath = await getConfigFilePathFromMetadataFile(
           path.basename(configDirPath),
-          { ...args, envName: toEnvName },
+          { ...args, metadataFilePath, envName: toEnvName },
         );
 
         await createDirectoryIfNotExists(path.dirname(newConfigFilePath));
 
         await copy(configFilePath, newConfigFilePath, { overrideExisting });
       },
-      { ...args, envName: fromEnvName },
+      { ...args, metadataFilePath, envName: fromEnvName },
     );
 
     logger.info('Environment cloned');

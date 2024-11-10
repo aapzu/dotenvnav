@@ -1,30 +1,25 @@
 import { createCommandModule } from '../lib/createCommandModule';
 import { forEachEnvFile } from '../lib/forAllEnvFiles';
 import { createSymlink } from '../lib/fsUtils';
+import { getEnvs } from '../lib/getEnvs';
 import { logger } from '../lib/logger';
-import { validateMetadataFile } from '../lib/metadataFile';
-import { checkEnv } from '../lib/validators';
+import { createValidateMetadataFileChecker } from '../lib/metadataFile';
 
 const useEnvCommandModule = createCommandModule({
   command: 'use-env <env-name>',
   aliases: ['env <envName>', 'use <envName>'],
   describe: 'Use an environment',
-  builder: (yargs) =>
+  builder: async (yargs) =>
     yargs
       .positional('env-name', {
         alias: 'e',
         type: 'string',
         description: 'Name of the environment',
         default: 'default',
+        choices:
+          (yargs.parsed && (await getEnvs(yargs.parsed.argv))) || undefined,
       })
-      .middleware(validateMetadataFile)
-      .check((argv) =>
-        checkEnv(
-          argv['env-name'],
-          argv['metadata-file-path'],
-          argv['project-root'],
-        ),
-      ),
+      .check(createValidateMetadataFileChecker()),
   handler: async (args) => {
     logger.info(`Using ${args.envName} env`);
 

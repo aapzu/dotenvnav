@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
-import type { TCommonOptionsCamelCase } from '../cli';
+import type { TCommonOptions, TCommonOptionsCamelCase } from '../cli';
 
+import type { Arguments } from 'yargs';
 import { getProjectName } from './commonUtils';
 import { exists, readFileContent, writeFile } from './fsUtils';
 import { logger } from './logger';
@@ -19,13 +20,11 @@ export const upsertMetadataFile = async ({
   configRoot,
   projectRoot,
   metadataFilePath,
-}: {
+}: Pick<TCommonOptionsCamelCase, 'projectRoot' | 'metadataFilePath'> & {
   configRoot: string;
-  projectRoot: string;
-  metadataFilePath: string;
 }) => {
   const currentMetadataFile = (await exists(metadataFilePath))
-    ? await readMetadataFile({ metadataFilePath })
+    ? await readMetadataFile(metadataFilePath)
     : undefined;
 
   const metadata: MetadataFile = {
@@ -41,12 +40,9 @@ export const upsertMetadataFile = async ({
   await writeFile(metadataFilePath, JSON.stringify(metadata, null, 2));
 };
 
-export const readMetadataFile = async ({
-  metadataFilePath,
-}: Pick<
-  TCommonOptionsCamelCase,
-  'metadataFilePath'
->): Promise<MetadataFile> => {
+export const readMetadataFile = async (
+  metadataFilePath: TCommonOptionsCamelCase['metadataFilePath'],
+): Promise<MetadataFile> => {
   const fileContent = await readFileContent(metadataFilePath);
   let parsedMetadataFile: unknown;
   try {
@@ -66,51 +62,40 @@ export const readMetadataFile = async ({
   }
 };
 
-type TValidateMetadataFileOptions = Pick<
-  TCommonOptionsCamelCase,
-  'projectRoot' | 'metadataFilePath'
-> & {
-  allowNotExists?: boolean;
-  configRoot?: string;
-};
+type TValidateMetadatefileCheckerOptions = { allowNotExists?: boolean };
 
-export const validateMetadataFile = async ({
-  metadataFilePath,
-  projectRoot,
-  configRoot,
-  allowNotExists,
-}: TValidateMetadataFileOptions) => {
-  if (!(await exists(metadataFilePath))) {
-    if (allowNotExists) {
-      logger.debug('No metadata file found');
-      return;
+export const createValidateMetadataFileChecker =
+  ({ allowNotExists = false }: TValidateMetadatefileCheckerOptions = {}) =>
+  async ({
+    'metadata-file-path': metadataFilePath,
+    'project-root': projectRoot,
+    'config-root': newConfigRoot,
+  }: Arguments<TCommonOptions & { 'config-root'?: string }>) => {
+    if (!(await exists(metadataFilePath))) {
+      if (allowNotExists) {
+        logger.debug('No metadata file found');
+        return true;
+      }
+      return `Metadata file not found in ${metadataFilePath}. Please run 'init' first.`;
     }
-    throw new Error(
-      `Metadata file not found in ${metadataFilePath}. Please run 'init' first.`,
-    );
-  }
 
-  const metadataFileContent = await readMetadataFile({ metadataFilePath });
-  const projectName = getProjectName(projectRoot);
-  const initializedWithProjectRoot = metadataFileContent.projects[projectName];
+    const { configRoot, projects } = await readMetadataFile(metadataFilePath);
+    const projectName = getProjectName(projectRoot);
+    const initializedWithProjectRoot = projects[projectName];
 
-  if (configRoot && metadataFileContent.configRoot !== configRoot) {
-    throw new Error(
-      `The metadata file ${metadataFilePath} was initialized with different config root (${metadataFileContent.configRoot}). Refusing to proceed.`,
-    );
-  }
-
-  if (!initializedWithProjectRoot) {
-    if (allowNotExists) {
-      return;
+    if (configRoot && newConfigRoot && configRoot !== newConfigRoot) {
+      return `The metadata file ${metadataFilePath} was initialized with different config root (${configRoot}). Refusing to proceed.`;
     }
-    throw new Error(
-      `The project ${projectName} was not initialized. Please run 'init' first.`,
-    );
-  }
-  if (initializedWithProjectRoot !== projectRoot) {
-    throw new Error(
-      `The project ${projectName} was initialized using different project root (${initializedWithProjectRoot}). Refusing to proceed.`,
-    );
-  }
-};
+
+    if (!initializedWithProjectRoot) {
+      if (allowNotExists) {
+        return true;
+      }
+      return `The project ${projectName} was not initialized. Please run 'init' first.`;
+    }
+    if (initializedWithProjectRoot !== projectRoot) {
+      return `The project ${projectName} was initialized using different project root (${initializedWithProjectRoot}). Refusing to proceed.`;
+    }
+
+    return true;
+  };
