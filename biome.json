@@ -8,10 +8,11 @@
     "lineEnding": "lf",
     "lineWidth": 80,
     "attributePosition": "auto",
-    "ignore": ["**/dist"]
+    "ignore": ["dist"]
   },
   "organizeImports": {
-    "enabled": true
+    "enabled": true,
+    "ignore": ["dist"]
   },
   "linter": {
     "enabled": true,
