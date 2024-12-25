@@ -13,6 +13,7 @@
     "cli": "pnpm start",
     "test": "vitest run",
     "test:watch": "vitest dev",
+    "ci": "biome ci",
     "lint": "biome lint",
     "lint:fix": "pnpm lint --fix",
     "typecheck": "tsc --noEmit",
@@ -55,5 +56,6 @@
   },
   "lint-staged": {
     "*": ["biome check --fix --no-errors-on-unmatched"]
-  }
+  },
+  "packageManager": "pnpm@8.13.0+sha256.fbcf256db6d06bc189e31df34b3ed61220f3ba9f78a2ca8fe7be0fce4670dbd3"
 }

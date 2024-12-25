@@ -4,33 +4,15 @@ on:
     tags: 
       - 'v*'
 jobs:
-  build:
-    uses: './.github/workflows/build.yml'
+  release_build:
+    uses: ./.github/workflows/build.yml
   release:
-    needs: build
+    needs: release_build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18]
     steps:
       - name: Exit if not on master branch
         if: endsWith(github.ref, 'master') == false
         run: exit 0
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8.13.1
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-          registry-url: https://registry.npmjs.org/
-      - name: Install
-        run: pnpm install --frozen-lockfile
-      - name: Build
-        run: pnpm run build
       - name: Create Release 
         uses: ncipollo/release-action@v1.13.0
         with:

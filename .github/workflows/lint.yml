@@ -1,4 +1,4 @@
-name: Build
+name: Lint
 on:
   push:
     branches: 
@@ -8,14 +8,15 @@ on:
       - main
   workflow_call:
 jobs:
-  build:
+  lint:
+    needs: lint_install
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install pnpm ${{ matrix.pnpm_version }}
+      - name: Setup Pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: true
-      - name: Build
-        run: pnpm build
+      - name: Lint & format
+        run: pnpm run ci
