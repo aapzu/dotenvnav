@@ -1,52 +1,6 @@
-import * as fsOriginal from 'node:fs';
-
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { logger } from './logger';
-
-const fsPromises = fsOriginal.promises;
-
-const DRY_RUN_KEYS = [
-  'unlink',
-  'rmdir',
-  'symlink',
-  'cp',
-  'rename',
-  'mkdir',
-  'writeFile',
-] satisfies (keyof typeof fsPromises)[];
-
-type TFsPromisesFunctionKey = keyof {
-  // biome-ignore lint/complexity/noBannedTypes: will fix
-  [K in keyof typeof fsPromises as (typeof fsPromises)[K] extends Function
-    ? K
-    : never]: true;
-};
-
-/**
- * File system functions with dry run support
- */
-export const fs: typeof fsPromises = {
-  ...fsPromises,
-  ...DRY_RUN_KEYS.reduce<typeof fsPromises>(
-    <K extends TFsPromisesFunctionKey>(acc: typeof fsPromises, key: K) => ({
-      // biome-ignore lint/performance/noAccumulatingSpread: will fix soon
-      ...acc,
-      [key]: (...args: Parameters<(typeof fsPromises)[K]>) => {
-        if (process.env.DRY_RUN) {
-          logger.debug(
-            `Running fs.${key} with args \n  ${args
-              .map((arg) => JSON.stringify(arg))
-              .join('\n  ')})`,
-          );
-          return Promise.resolve();
-        }
-        // @ts-expect-error can't figure out how to type this
-        return fsPromises[key](...args);
-      },
-    }),
-    fsPromises,
-  ),
-};
 
 type TCommonOpts = {
   overrideExisting?: boolean;

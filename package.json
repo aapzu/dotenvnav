@@ -1,6 +1,6 @@
 {
   "name": "@aapzu/dotenvnav",
-  "version": "2.0.3",
+  "version": "test",
   "description": "A utility tool to store your project's local .env files in a single place, symlink them back to the project and change them to a different set of files with a single command.",
   "main": "src/index.ts",
   "type": "module",
@@ -10,6 +10,8 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsup-node",
+    "build:watch": "tsup-node --watch",
+    "dev": "pnpm build:watch",
     "cli": "pnpm start",
     "test": "vitest run",
     "test:watch": "vitest dev",

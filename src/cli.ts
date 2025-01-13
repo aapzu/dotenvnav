@@ -1,6 +1,7 @@
+import fs from 'node:fs';
 import log from 'loglevel';
+import mock from 'mock-fs';
 import yargs, { type Argv } from 'yargs';
-
 import cloneEnvCommandModule from './commands/cloneEnv';
 import initCommandModule from './commands/init';
 import listEnvFilesCommandModule from './commands/listEnvFiles';
@@ -11,7 +12,10 @@ import { logger } from './lib/logger';
 import { normalizePath } from './lib/normalizers';
 import type { TKebabCaseKeysToCamelCase } from './types';
 
+import { dirname } from 'node:path';
 import type pkgJson from '../package.json';
+import { initDryRun } from './dryRun';
+import { exists } from './lib/fsUtils';
 
 log.setLevel('INFO');
 
@@ -56,7 +60,8 @@ const commonYargs = yargs(process.argv.slice(2))
       log.setLevel('DEBUG');
     }
     if (argv['dry-run']) {
-      process.env.DRY_RUN = 'true';
+      log.info('Dry run – no changes will be made');
+      initDryRun(argv);
     }
   })
   .fail((msg, err) => {
@@ -76,6 +81,7 @@ export const parser = commonYargs
   .command(listEnvsCommandModule)
   .command(listEnvFilesCommandModule)
   .command(useEnvCommandModule)
+  .version()
   .strict()
   .demandCommand()
   .scriptName(scriptName)

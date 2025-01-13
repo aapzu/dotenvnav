@@ -72,14 +72,16 @@ const initCommandModule = createCommandModule({
 
     await upsertMetadataFile(args);
 
+    logger.info(
+      `Looking for env files in ${projectRoot} matching pattern(s) ${args.envFileName.join(', ')}`,
+    );
+
     const envFiles = await getEnvFilesFromProjectDir(args);
 
     if (envFiles.length === 0) {
       logger.info(`No env files found in ${projectRoot}, nothing to do`);
       return;
     }
-
-    logger.info(`Looking for env files in ${projectRoot}`);
 
     logger.info(
       `These symbolic links will be created:
